@@ -1,13 +1,12 @@
 name            = "llm-pricing-api"
 main            = "cloudflare/worker.js"
 compatibility_date = "2025-01-01"
-node_compat     = false
 
 # ─── D1 Database ─────────────────────────────────────────────────────────────
 [[d1_databases]]
 binding         = "DB"
 database_name   = "llm-pricing"
-database_id     = "REPLACE_WITH_YOUR_D1_ID"   # wrangler d1 create llm-pricing
+database_id     = "3558bfc0-c8d8-4d36-8f85-e84c20840ce7"
 
 # ─── Secrets (wrangler secret put NOMBRE) ────────────────────────────────────
 # INTERNAL_SECRET   → token secreto para autenticar el bot (genera uno random)
