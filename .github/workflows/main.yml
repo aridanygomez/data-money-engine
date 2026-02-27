@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout del codigo
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configurar Python
         uses: actions/setup-python@v5
@@ -29,9 +31,12 @@ jobs:
         run: python bot_generador.py
 
       - name: Guardar cambios en GitHub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name 'DataBot'
           git config --global user.email 'bot@github.com'
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/aridanygomez/data-money-engine.git
           git add data/ docs/
           git commit -m "Auto: $(date +'%Y-%m-%d') — $(python -c "import json,pathlib; d=json.loads(pathlib.Path('data/models.json').read_text()) if pathlib.Path('data/models.json').exists() else []; print(f'{len(d)} models')" 2>/dev/null || echo 'data updated')" || exit 0
           git push
