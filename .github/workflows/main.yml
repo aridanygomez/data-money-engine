@@ -1,0 +1,35 @@
+name: Ejecutor Autonomo de Contenido
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # 06:00 UTC = 07:00 CET (cada mañana)
+  workflow_dispatch:      # Permite ejecutarlo a mano desde GitHub
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Ejecutar bot generador
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python bot_generador.py
+
+      - name: Guardar cambios en GitHub
+        run: |
+          git config --global user.name 'DataBot'
+          git config --global user.email 'bot@github.com'
+          git add .
+          git commit -m "Auto: actualizacion $(date +'%Y-%m-%d')" || exit 0
+          git push
