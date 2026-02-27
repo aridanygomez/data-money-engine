@@ -321,6 +321,7 @@ def _html(title: str, body: str, desc: str = "", canonical: str = "") -> str:
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="google-site-verification" content="google986f63de7999948a" />
 <title>{title}</title>
 <meta name="description" content="{og_desc[:155]}" />
 {canon_tag}
