@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-27T20:23:12.361748",
+  "generated_at": "2026-02-27T20:34:29.042340",
   "date": "2026-02-27",
   "stats": {
     "total_models": 344,
@@ -246,7 +246,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/mistralai/mistral-nemo",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore Mistral Nemo API pricing for large language model inference. Mistralai's Nemo offers a generous 131,072 token context window with competitive rates. Input tokens are priced at $0.02000 per 1 million tokens, while output tokens cost $0.04000 per 1 million tokens, resulting in a total cost of $0.0600 per million tokens. This makes it an attractive option for ML engineers seeking cost-effective LLM solutions. For instance, processing 100 million tokens monthly (a mix of input and output) would cost approximately $6.00. Compare Mistral Nemo's pricing against other LLM APIs to determine the best fit for your project's budget and performance needs."
     },
     {
       "id": "meta-llama/llama-3.1-8b-instruct",
@@ -260,7 +260,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/meta-llama/llama-3.1-8b-instruct",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore Meta Llama 3.1 8B Instruct API pricing for your large language model (LLM) needs. Ideal for ML engineers, this page details the cost-effective token pricing: $0.02000 per 1 million input tokens and $0.05000 per 1 million output tokens, totaling $0.070 per 1 million tokens. With a context window of 16,384 tokens, Llama 3.1 offers a balance of performance and cost. For example, a project processing 100 million input tokens and generating 50 million output tokens monthly would cost approximately $4.50. Compare Meta Llama 3.1 API costs against other LLM providers and optimize your AI development budget."
     },
     {
       "id": "meta-llama/llama-3-8b-instruct",
@@ -274,7 +274,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/meta-llama/llama-3-8b-instruct",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore the pricing for Meta's Llama 3 8B Instruct API. This page details the cost structure for this powerful large language model, crucial for ML engineers evaluating LLM API options. Input tokens are priced at $0.03000 per 1 million tokens, while output tokens cost $0.04000 per 1 million tokens, resulting in a total cost of $0.0700 per 1 million tokens. Llama 3 8B Instruct offers a context window of 8,192 tokens. As a practical example, if your application processes 10 million tokens daily, your estimated monthly cost would be approximately $21.00. Make informed decisions about your LLM implementation using Meta's meta-llama provider."
     },
     {
       "id": "meta-llama/llama-guard-3-8b",
@@ -288,7 +288,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/meta-llama/llama-guard-3-8b",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore Meta's Llama Guard 3 8B API pricing for responsible AI development. Understand the cost structure for input ($0.02000/1M tokens), output ($0.06000/1M tokens), and overall usage ($0.0800 per 1M tokens). This powerful model boasts a 131,072 token context window, enabling nuanced safety evaluations. If your application processes 10 million tokens daily, expect a monthly cost of approximately $24. This competitive pricing makes Llama Guard 3 8B a compelling choice for ML engineers seeking cost-effective content moderation and safety assurance. Compare Llama Guard 3 8B's pricing and context window against other LLM APIs to determine the best fit for your project's budget and requirements."
     },
     {
       "id": "sao10k/l3-lunaris-8b",
@@ -302,7 +302,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/sao10k/l3-lunaris-8b",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore Sao10k's competitive pricing for the Llama 3 8B Lunaris API. Ideal for ML engineers evaluating LLM API costs, we offer transparent and predictable rates: $0.04000 per 1M input tokens and $0.05000 per 1M output tokens, totaling $0.0900 per 1M tokens. With a context window of 8,192 tokens, Llama 3 8B Lunaris delivers powerful performance at an affordable price. For example, a project processing 100 million tokens monthly would cost just $9.00. Evaluate Sao10k for a cost-effective and high-quality LLM solution."
     },
     {
       "id": "meta-llama/llama-3.2-11b-vision-instruct",
@@ -316,7 +316,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/meta-llama/llama-3.2-11b-vision-instruct",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore the pricing for Meta's Llama 3.2 11B Vision Instruct API. Understand the costs associated with this powerful large language model, offered under the meta-llama provider, and compare it against other LLM APIs. Input and output tokens are priced at $0.04900 per 1 million tokens each, resulting in a total cost of $0.0980 per 1 million tokens processed. With a substantial context window of 131,072 tokens, Llama 3.2 11B Vision Instruct API offers a wide range of applications. For example, processing 10 million tokens daily would cost approximately $29.40 per month. Evaluate if Llama 3.2 11B Vision Instruct API aligns with your budget and performance needs."
     },
     {
       "id": "qwen/qwen2.5-coder-7b-instruct",
@@ -330,7 +330,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/qwen/qwen2.5-coder-7b-instruct",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore the competitive pricing for the Qwen2.5 Coder 7B Instruct API. Ideal for ML engineers evaluating large language model APIs, Qwen offers a 32,768 token context window with input priced at $0.03000 per 1 million tokens and output at $0.09000 per 1 million tokens. The combined cost is $0.1200 per 1 million tokens. For example, processing 10 million tokens of input and 5 million tokens of output monthly would cost approximately $0.75. Compare Qwen's cost-effectiveness and performance against other leading LLMs and optimize your AI development budget. Understand the economics of using Qwen for your coding and instruction-based applications."
     },
     {
       "id": "google/gemma-3-4b-it",
@@ -344,7 +344,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/google/gemma-3-4b-it",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore Google's Gemma 3 4B API pricing for your large language model (LLM) projects. Understand the cost structure with rates of $0.04000 per 1 million input tokens and $0.08000 per 1 million output tokens, totaling $0.1200 per 1M tokens. Gemma 3 4B boasts a context window of 131,072 tokens, enabling more comprehensive processing. For example, a project processing 100 million tokens monthly would cost approximately $12.00. Compare Gemma 3 4B's pricing with other LLM APIs to optimize your machine learning budget and make informed decisions for your development needs."
     },
     {
       "id": "google/gemma-2-9b-it",
@@ -358,7 +358,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/google/gemma-2-9b-it",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore Google's Gemma 2 9B API pricing for your large language model (LLM) applications. This page details the cost structure for input and output tokens, crucial for ML engineers evaluating different APIs. Specifically, Gemma 2 9B is priced at $0.03000 per 1 million input tokens and $0.09000 per 1 million output tokens, totaling $0.1200 per million tokens. With a context window of 8,192 tokens, understand how Google's offering compares in terms of cost-effectiveness. For example, a project processing 100 million input tokens and generating 50 million output tokens monthly would cost $7.50. Analyze the data to determine if Gemma 2 9B fits your budget and performance needs."
     }
   ],
   "free_models": [

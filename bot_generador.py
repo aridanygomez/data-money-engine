@@ -302,6 +302,20 @@ document.querySelectorAll('th[data-col]').forEach(th => {
 def _html(title: str, body: str, desc: str = "", canonical: str = "") -> str:
     canon_tag = f'<link rel="canonical" href="{canonical}" />' if canonical else ""
     og_desc = desc or title
+    url = canonical or SITE_URL
+    schema = json.dumps({
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": title,
+        "description": og_desc[:155],
+        "url": url,
+        "datePublished": TODAY,
+        "dateModified": TODAY,
+        "author": {"@type": "Organization", "name": "LLM Pricing Engine", "url": SITE_URL},
+        "publisher": {"@type": "Organization", "name": "LLM Pricing Engine", "url": SITE_URL},
+        "image": f"{SITE_URL}/og-image.svg",
+        "mainEntityOfPage": {"@type": "WebPage", "@id": url},
+    }, ensure_ascii=False)
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -313,7 +327,15 @@ def _html(title: str, body: str, desc: str = "", canonical: str = "") -> str:
 <meta property="og:title" content="{title}" />
 <meta property="og:description" content="{og_desc[:155]}" />
 <meta property="og:type" content="website" />
-<link rel="sitemap" href="/sitemap.xml" />
+<meta property="og:url" content="{url}" />
+<meta property="og:image" content="{SITE_URL}/og-image.svg" />
+<meta property="og:site_name" content="LLM Pricing" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{title}" />
+<meta name="twitter:description" content="{og_desc[:155]}" />
+<meta name="twitter:image" content="{SITE_URL}/og-image.svg" />
+<link rel="sitemap" href="{SITE_URL}/sitemap.xml" />
+<script type="application/ld+json">{schema}</script>
 <style>{CSS}</style>
 </head>
 <body>
@@ -752,6 +774,7 @@ def main():
     pages_models = generate_model_pages(models, descriptions)
     pages_compare = generate_comparison_pages(models, comparisons)
     generate_sitemap(models, comparisons)
+    generate_static_assets(len(models), len(comparisons))
     total_pages = pages_index + pages_models + pages_compare
     log_entry["html_pages_generated"] = total_pages
 
@@ -771,6 +794,45 @@ def main():
 
 
 # ─── HTML Generation ─────────────────────────────────────────────────────────
+
+def generate_static_assets(model_count: int, compare_count: int):
+    """Genera robots.txt, og-image.svg y 404.html para GitHub Pages."""
+    # robots.txt
+    (OUTPUT_DIR / "robots.txt").write_text(
+        f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}/sitemap.xml\n",
+        encoding="utf-8",
+    )
+
+    # OG image (SVG — no depende de Pillow, se renderea como imagen en Twitter/Discord)
+    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#09090b"/>
+  <rect x="0" y="0" width="1200" height="3" fill="#3b82f6"/>
+  <text x="80" y="160" font-family="system-ui,sans-serif" font-size="72" font-weight="800"
+        fill="white" letter-spacing="-3">LLM API Pricing</text>
+  <text x="80" y="240" font-family="system-ui,sans-serif" font-size="36" fill="#71717a">Real-time cost comparison for {model_count}+ AI models</text>
+  <rect x="80" y="310" width="340" height="120" rx="16" fill="#18181b" stroke="#27272a" stroke-width="1"/>
+  <text x="100" y="355" font-family="monospace" font-size="14" fill="#71717a">Models tracked</text>
+  <text x="100" y="410" font-family="monospace" font-size="52" font-weight="800" fill="#3b82f6">{model_count}+</text>
+  <rect x="460" y="310" width="340" height="120" rx="16" fill="#18181b" stroke="#27272a" stroke-width="1"/>
+  <text x="480" y="355" font-family="monospace" font-size="14" fill="#71717a">Comparisons</text>
+  <text x="480" y="410" font-family="monospace" font-size="52" font-weight="800" fill="#10b981">{compare_count}+</text>
+  <text x="80" y="560" font-family="system-ui,sans-serif" font-size="24" fill="#3f3f46">{SITE_URL}</text>
+</svg>"""
+    (OUTPUT_DIR / "og-image.svg").write_text(svg, encoding="utf-8")
+
+    # 404.html (GitHub Pages lo usa automáticamente)
+    html_404 = _html(
+        title="Page Not Found — LLM Pricing",
+        body=f"""<div class="hero" style="text-align:center;padding:8rem 1rem">
+  <div class="hero-badge">404</div>
+  <h1 style="font-size:2.5rem">Page not found</h1>
+  <p class="subtitle">This model or comparison might have been removed.</p>
+  <a class="btn" href="{SITE_URL}/">Back to all models &rarr;</a>
+</div>""",
+        desc="Page not found — return to LLM API pricing comparison.",
+        canonical=f"{SITE_URL}/",
+    )
+    (OUTPUT_DIR / "404.html").write_text(html_404, encoding="utf-8")
 
 def generate_index_html(models: list[dict], price_changes: list[dict], descriptions: dict) -> int:
     """Genera output/index.html — homepage con tabla completa de precios."""

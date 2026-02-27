@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#09090b"/>
+  <rect x="0" y="0" width="1200" height="3" fill="#3b82f6"/>
+  <text x="80" y="160" font-family="system-ui,sans-serif" font-size="72" font-weight="800"
+        fill="white" letter-spacing="-3">LLM API Pricing</text>
+  <text x="80" y="240" font-family="system-ui,sans-serif" font-size="36" fill="#71717a">Real-time cost comparison for 344+ AI models</text>
+  <rect x="80" y="310" width="340" height="120" rx="16" fill="#18181b" stroke="#27272a" stroke-width="1"/>
+  <text x="100" y="355" font-family="monospace" font-size="14" fill="#71717a">Models tracked</text>
+  <text x="100" y="410" font-family="monospace" font-size="52" font-weight="800" fill="#3b82f6">344+</text>
+  <rect x="460" y="310" width="340" height="120" rx="16" fill="#18181b" stroke="#27272a" stroke-width="1"/>
+  <text x="480" y="355" font-family="monospace" font-size="14" fill="#71717a">Comparisons</text>
+  <text x="480" y="410" font-family="monospace" font-size="52" font-weight="800" fill="#10b981">85+</text>
+  <text x="80" y="560" font-family="system-ui,sans-serif" font-size="24" fill="#3f3f46">https://aridanygomez.github.io/data-money-engine</text>
+</svg>
