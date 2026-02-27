@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # necesario para git push
 
     steps:
       - name: Checkout del codigo
