@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-27T19:11:21.037791",
+  "generated_at": "2026-02-27T19:20:40.984832",
   "date": "2026-02-27",
   "stats": {
     "total_models": 344,
@@ -20,7 +20,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/meta-llama/llama-3.3-70b-instruct",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore the pricing for Meta's Llama 3.3 70B Instruct API. This page details the cost structure for machine learning engineers evaluating large language models. The Llama 3.3 70B Instruct API is offered by meta-llama and features a 131,072 token context window. Input tokens are priced at $0.10000 per 1 million tokens, while output tokens cost $0.32000 per 1 million tokens, totaling $0.4200 per 1 million tokens. For example, if your application processes 100 million tokens monthly, the estimated cost would be $42.00. Compare Llama 3.3 70B Instruct API pricing against other LLM APIs to optimize your machine learning budget."
     },
     {
       "id": "google/gemini-2.0-flash-001",
@@ -34,7 +34,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/google/gemini-2.0-flash-001",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore Google's Gemini 2.0 Flash API pricing for large language model applications. Designed for machine learning engineers, Gemini 2.0 Flash offers a context window of 1,048,576 tokens. Understand the cost structure: input is priced at $0.10000 per 1 million tokens, while output costs $0.40000 per 1 million tokens, totaling $0.5000 per 1 million tokens. For example, processing 100 million tokens monthly would cost approximately $50. Evaluate if Gemini 2.0 Flash's balance of cost and context length fits your project needs when comparing LLM APIs. Learn more about optimizing your budget for AI development with Google's latest model."
     },
     {
       "id": "qwen/qwen-2.5-72b-instruct",
@@ -48,7 +48,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/qwen/qwen-2.5-72b-instruct",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore the cost-effective Qwen2.5 72B Instruct API for your large language model needs. Offered by qwen, this powerful model boasts a 32,768 token context window. Understand the pricing structure: input tokens are priced at $0.12000 per 1 million tokens, while output tokens cost $0.39000 per 1 million tokens, totaling $0.5100 per 1 million tokens. For example, a project processing 100 million input tokens and generating 20 million output tokens monthly would cost approximately $19.80. Ideal for ML engineers comparing LLM API options, Qwen2.5 72B provides a balance of performance and affordability."
     },
     {
       "id": "openai/gpt-4o-mini",
@@ -62,7 +62,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/openai/gpt-4o-mini",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore OpenAI's GPT-4o-mini API pricing for your large language model (LLM) needs. Designed for efficiency, this API offers a 128,000 token context window with input priced at $0.15000 per 1 million tokens and output at $0.60000 per 1 million tokens, totaling $0.7500 per million tokens. Compare GPT-4o-mini against other LLMs by cost and performance. For example, processing 100 million tokens per day would cost approximately $22.50 per day, totaling around $675 per month. See if OpenAI's GPT-4o-mini fits your budget and requirements for AI development."
     },
     {
       "id": "meta-llama/llama-3.1-70b-instruct",
@@ -76,7 +76,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/meta-llama/llama-3.1-70b-instruct",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore the pricing details for Meta's Llama 3.1 70B Instruct API, a leading LLM for machine learning applications. Understand the cost structure for input and output tokens: $0.40000 per 1 million input tokens and $0.40000 per 1 million output tokens, totaling $0.8000 per million tokens. With a context window of 131,072 tokens, this API offers substantial processing capability. Powered by meta-llama, it's designed for efficiency and performance. For example, processing 10 million tokens daily would cost approximately $24 per month, making it a competitive choice for ML engineers comparing LLM API options based on both cost and context window size."
     },
     {
       "id": "deepseek/deepseek-chat",
@@ -90,7 +90,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/deepseek/deepseek-chat",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore DeepSeek V3 API pricing for your large language model projects. Understand the cost implications with transparent rates: $0.32000 per 1 million input tokens and $0.89000 per 1 million output tokens, totaling $1.2100 per million tokens. DeepSeek offers a substantial 163,840 token context window. Ideal for ML engineers evaluating LLM API costs, this data-driven pricing allows for informed decisions. For instance, a project processing 50 million input tokens and generating 10 million output tokens monthly would cost approximately $25. Explore if DeepSeek's pricing aligns with your project's budgetary needs."
     },
     {
       "id": "deepseek/deepseek-r1",
@@ -104,7 +104,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/deepseek/deepseek-r1",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore DeepSeek R1 API pricing and see if it fits your LLM needs. Designed for ML engineers, DeepSeek R1 offers a 64,000 token context window with competitive rates: $0.70 per 1M input tokens and $2.50 per 1M output tokens, totaling $3.20 per 1M tokens. Understand your potential costs with our clear pricing structure. For example, processing 10 million tokens monthly (5M input, 5M output) would cost approximately $16. Evaluate DeepSeek R1's cost-effectiveness against other large language model APIs and see how it can power your next project."
     },
     {
       "id": "mistralai/mistral-large",
@@ -118,7 +118,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/mistralai/mistral-large",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore Mistral Large API pricing and understand the costs associated with this powerful large language model. With a context window of 128,000 tokens, Mistral Large offers extensive processing capabilities. Input tokens are priced at $2.00000 per 1 million tokens, while output tokens cost $6.00000 per 1 million tokens, totaling $8.0000 per 1M tokens. For example, processing 10 million tokens per day would cost approximately $240 per month. This detailed breakdown helps ML engineers accurately estimate expenses when comparing LLM APIs for their projects. Evaluate if Mistral Large from mistralai fits your budget and performance requirements."
     },
     {
       "id": "openai/gpt-4o",
@@ -132,7 +132,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/openai/gpt-4o",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore OpenAI GPT-4o API pricing details for machine learning engineers. Understand the cost implications of using this powerful large language model. Input tokens are priced at $2.50 per 1 million tokens, while output tokens cost $10.00 per 1 million tokens, for a total cost of $12.50 per million tokens. GPT-4o offers a substantial 128,000 token context window. For example, processing 10 million tokens monthly (8M input, 2M output) would cost approximately $40. Evaluate if OpenAI's GPT-4o API fits your project's budget and performance needs compared to other LLM APIs."
     },
     {
       "id": "openai/o1",
@@ -146,7 +146,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/openai/o1",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Understand OpenAI's o1 API pricing for large language models. Designed for machine learning engineers, this page details the cost structure, with input priced at $15.00000 per 1 million tokens and output at $60.00000 per 1 million tokens, totaling $75.0000 per million tokens. The API supports a context window of 200,000 tokens. Evaluate if OpenAI's o1 API fits your budget: for example, processing 10 million tokens monthly (split equally between input and output) would cost approximately $375. This detailed breakdown helps you accurately estimate expenses when comparing LLM API providers for your projects."
     }
   ],
   "cheapest_paid": [
@@ -162,7 +162,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/openrouter/bodybuilder",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore Body Builder (beta) API pricing details for your large language model projects. Powered by OpenRouter, Body Builder offers a 128,000 token context window with input and output priced at $-1000000.00000 per 1 million tokens each, resulting in a total cost of $-2000000.0000 per 1 million tokens. This transparent pricing model allows ML engineers to accurately estimate costs. For example, processing 50 million tokens monthly would cost $-100000.0000. Compare Body Builder's competitive rates with other LLM APIs and optimize your budget. Find out if Body Builder's performance and pricing align with your specific needs."
     },
     {
       "id": "openrouter/auto",
@@ -176,7 +176,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/openrouter/auto",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore Auto Router API pricing powered by openrouter. Understand your costs upfront with our transparent token-based pricing model. Input and output tokens are priced at $-1000000.00000 per 1M tokens each, resulting in a total cost of $-2000000.0000 per 1M tokens. For example, processing a context of 2,000,000 tokens would cost you $-4000000.0000. Ideal for ML engineers evaluating LLM API options, our competitive pricing ensures cost-effective scalability for your projects. Estimate your potential monthly spend accurately and compare our rates against other leading providers."
     },
     {
       "id": "liquid/lfm2-8b-a1b",
@@ -374,7 +374,7 @@
       "is_free": true,
       "openrouter_url": "https://openrouter.ai/openrouter/free",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore the Free Models Router API through OpenRouter, a cost-effective solution for ML engineers seeking powerful LLM options. With an input and output cost of $0.00000 per 1M tokens, this API offers zero cost access to various free models. Enjoy a generous context window of 200,000 tokens. Perfect for prototyping and experimentation, the Free Models Router allows you to test different models without budget constraints. For example, processing 100 million tokens monthly would still cost you $0.00. Compare performance across models and streamline your LLM development process with OpenRouter's completely free tier."
     },
     {
       "id": "stepfun/step-3.5-flash:free",
@@ -388,7 +388,7 @@
       "is_free": true,
       "openrouter_url": "https://openrouter.ai/stepfun/step-3.5-flash:free",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore StepFun's completely free Step 3.5 Flash API! Ideal for ML engineers seeking cost-effective LLM solutions, StepFun offers $0.00000 input and output pricing per 1M tokens. Forget hidden costs; this API is truly free. With a context window of 256,000 tokens, it's perfect for handling substantial workloads without budget concerns. For example, even processing 1 billion tokens monthly would cost absolutely nothing. Compare StepFun's pricing transparency and zero-cost model against other LLM providers and see how much you can save without sacrificing performance."
     },
     {
       "id": "arcee-ai/trinity-large-preview:free",
@@ -402,7 +402,7 @@
       "is_free": true,
       "openrouter_url": "https://openrouter.ai/arcee-ai/trinity-large-preview:free",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore Arcee AI's Trinity Large Preview API, offering a completely free, zero-cost option for machine learning engineers evaluating LLM APIs. With a generous 131,000 token context window, the Trinity Large Preview API allows for extensive experimentation and prototyping without budget constraints. Benefit from $0.00000 input and $0.00000 output pricing per million tokens. For example, processing 10 million input tokens and generating 5 million output tokens would cost you absolutely nothing. Perfect for rigorous testing and comparison against other large language models, the Trinity Large Preview API from arcee-ai provides unparalleled access to powerful AI capabilities."
     },
     {
       "id": "upstage/solar-pro-3:free",

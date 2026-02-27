@@ -13,18 +13,23 @@ Variables de entorno requeridas (GitHub Secrets):
 """
 
 import os
+import sys
 import json
 import time
 import requests
 from datetime import datetime, date
 from pathlib import Path
+
+# Forzar UTF-8 en Windows (arregla emojis en consola cp1252)
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import re
 
 # ─── Paths ───────────────────────────────────────────────────────────────────
 
 ROOT = Path(__file__).parent
 DATA_DIR = ROOT / "data"
-OUTPUT_DIR = ROOT / "output"
+OUTPUT_DIR = ROOT / "docs"
 DATA_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
 
@@ -49,7 +54,7 @@ PRIORITY_MODELS = [
 ]
 
 STORMROUTER_URL = "https://stormrouter.dev"
-SITE_URL = "https://llm-pricing.pages.dev"  # cambia a tu dominio Cloudflare Pages
+SITE_URL = "https://aridanygomez.github.io/data-money-engine"
 SITE_NAME = "LLM Pricing — Real-Time API Cost Comparison"
 
 # ─── HTML Templates ───────────────────────────────────────────────────────────
@@ -914,3 +919,4 @@ def _save_log(entry: dict):
 
 if __name__ == "__main__":
     main()
+

@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-02-27",
+    "timestamp": "2026-02-27T19:20:40.984832",
+    "success": true,
+    "models_fetched": 344,
+    "descriptions_generated": 15,
+    "price_changes": [],
+    "errors": [],
+    "html_pages_generated": 773,
+    "duration_seconds": 244.4
+  },
+  {
+    "date": "2026-02-27",
     "timestamp": "2026-02-27T19:11:21.037791",
     "success": true,
     "models_fetched": 344,
