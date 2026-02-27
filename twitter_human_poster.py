@@ -28,6 +28,14 @@ import time
 from datetime import date
 from pathlib import Path
 
+try:
+    import pyperclip
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.common.keys import Keys
+    from selenium.webdriver.common.action_chains import ActionChains
+except ImportError:
+    pass  # Se importan opcionalmente, se chequea en main()
+
 # ─── CONFIGURACIÓN ────────────────────────────────────────────────────────────
 ROOT        = Path(__file__).parent
 DATA_DIR    = ROOT / "data"
@@ -44,30 +52,43 @@ AUTO_MODE   = "--auto"  in sys.argv     # Sin confirmación humana
 
 def load_cheapest_model() -> dict | None:
     """Lee site_data.json y devuelve el modelo más barato del día."""
-    for fname in ["site_data.json", "models.json"]:
-        f = DATA_DIR / fname
-        if not f.exists():
-            continue
-        data = json.loads(f.read_text(encoding="utf-8"))
-        models = data.get("top_models", data) if isinstance(data, dict) else data
-        if not isinstance(models, list) or not models:
-            continue
-        paid = [m for m in models if float(
-            m.get("prompt_price_per_m", 0) or
+    f = DATA_DIR / "site_data.json"
+    if not f.exists():
+        f = DATA_DIR / "models.json"
+    if not f.exists():
+        print("⚠️  No hay datos. Corre primero bot_generador.py")
+        return None
+    data = json.loads(f.read_text(encoding="utf-8"))
+    # site_data.json usa cheapest_paid o priority_models
+    models = (
+        data.get("cheapest_paid") or
+        data.get("priority_models") or
+        data.get("top_models") or
+        (data if isinstance(data, list) else [])
+    )
+    # Filtrar precios positivos reales (excluir <0 o >999999)
+    def get_price(m):
+        return float(
+            m.get("prompt_price_per_1m") or
+            m.get("prompt_price_per_m") or
             (m.get("pricing", {}).get("prompt", 0) if isinstance(m.get("pricing"), dict) else 0)
-        ) > 0]
-        if not paid:
-            continue
-        paid.sort(key=lambda m: float(m.get("prompt_price_per_m", 0) or 0))
-        return paid[0]
-    return None
+            or 0
+        )
+    paid = [m for m in models if 0 < get_price(m) < 999999]
+    if not paid:
+        return None
+    paid.sort(key=get_price)
+    return paid[0]
 
 
 def build_tweet_thread(model: dict) -> list[str]:
     """Genera los tweets del hilo (max 280 chars c/u)."""
     name  = model.get("name", model.get("id", "Unknown LLM"))
-    price = float(model.get("prompt_price_per_m", 0) or 0)
-    slug  = re.sub(r"[^a-z0-9]+", "-", model.get("id", "model").lower()).strip("-")
+    price = float(
+        model.get("prompt_price_per_1m") or
+        model.get("prompt_price_per_m") or 0
+    )
+    slug  = model.get("slug") or re.sub(r"[^a-z0-9]+", "-", model.get("id", "model").lower()).strip("-")
     url   = f"{SITE_URL}/models/{slug}.html"
 
     t1 = (
@@ -247,100 +268,89 @@ def check_logged_in(driver) -> bool:
     return "login" not in driver.current_url and ("home" in page or "timeline" in page.lower())
 
 
-def post_tweet_in_compose(driver, pyag, tweet_text: str, is_reply: bool = False) -> bool:
+def post_tweet_in_compose(driver, tweet_text: str) -> bool:
     """
-    Escribe y publica un tweet en la ventana de compose abierta.
-    Usa pyautogui para los clicks reales en pantalla.
+    Escribe y publica un tweet usando el composer del home.
+    Usa pyperclip para pegar (soporta emojis) y JS click (evita intercepted).
     """
-    # Esperar el textarea de Twitter
-    textarea = wait_for_element(driver, '[data-testid="tweetTextarea_0"]', timeout=15)
+    from selenium.webdriver.common.action_chains import ActionChains
+    try:
+        import pyperclip
+        pyperclip.copy(tweet_text)
+    except ImportError:
+        print("  ⚠️  pyperclip no instalado: pip install pyperclip")
+        return False
+
+    TEXTAREA = '[data-testid="tweetTextarea_0"]'
+
+    # Esperar textarea
+    textarea = wait_for_element(driver, TEXTAREA, timeout=15)
     if not textarea:
-        # Intentar selector alternativo más genérico
-        textarea = wait_for_element(driver, 'div[role="textbox"]', timeout=5)
-    
+        textarea = wait_for_element(driver, '[aria-label="Post text"]', timeout=5)
     if not textarea:
-        print("  ❌ No encontré el cuadro de texto. Screenshot para diagnóstico:")
         screenshot("error_no_textarea")
+        print("  ❌ No encontré el cuadro de texto.")
         return False
 
-    # Obtener coordenadas en pantalla
-    sx, sy = get_element_center(driver, textarea)
-    
-    # Click en el textarea con movimiento humano
-    human_click(pyag, sx, sy)
-    time.sleep(random.uniform(0.5, 1.0))
-    
-    # Escribir el texto como humano
-    print(f"  ✍️  Escribiendo {len(tweet_text)} chars...")
-    human_type(pyag, tweet_text)
-    
-    time.sleep(random.uniform(0.8, 1.5))
-    screenshot("after_typing")
-    
-    # Buscar botón "Post" / "Tweet"
-    submit_btn = (
-        wait_for_element(driver, '[data-testid="tweetButtonInline"]', timeout=5) or
-        wait_for_element(driver, '[data-testid="tweetButton"]', timeout=5)
+    # Focus + click via JS (evita intercepciones de overlay)
+    driver.execute_script(
+        "arguments[0].scrollIntoView({block:'center'}); arguments[0].focus();",
+        textarea
     )
-    
-    if not submit_btn:
-        print("  ❌ No encontré el botón de publicar.")
-        screenshot("error_no_button")
-        return False
+    time.sleep(0.5)
+    driver.execute_script("arguments[0].click();", textarea)
+    time.sleep(random.uniform(0.4, 0.8))
 
-    bx, by = get_element_center(driver, submit_btn)
-    
+    # Pegar con Ctrl+V
+    print(f"  ✍️  Pegando {len(tweet_text)} chars via clipboard...")
+    ActionChains(driver).key_down(Keys.CONTROL).send_keys("v").key_up(Keys.CONTROL).perform()
+    time.sleep(random.uniform(1.2, 2.0))
+
+    screenshot("after_typing")
+
     if DRY_RUN:
-        print(f"  🧪 DRY RUN: Tweet listo pero NO publicado. Botón en ({bx},{by})")
-        screenshot("dryrun_ready")
+        print("  🧪 DRY RUN: texto listo pero NO publicado.")
         return True
-    
-    # Pausa natural antes de publicar (simula releer el tweet)
-    time.sleep(random.uniform(1.2, 3.0))
-    
-    human_click(pyag, bx, by)
-    print(f"  ✅ Tweet publicado!")
-    time.sleep(random.uniform(2.0, 4.0))
-    screenshot("after_post")
-    return True
+
+    # Click en botón Post via JS
+    for sel in ['[data-testid="tweetButtonInline"]', '[data-testid="tweetButton"]']:
+        btns = driver.find_elements(By.CSS_SELECTOR, sel)
+        for btn in btns:
+            try:
+                time.sleep(random.uniform(1.0, 1.8))
+                driver.execute_script("arguments[0].click();", btn)
+                print("  ✅ Tweet publicado!")
+                time.sleep(random.uniform(3.0, 5.0))
+                screenshot("after_post")
+                return True
+            except Exception:
+                pass
+
+    print("  ❌ No encontré el botón de publicar.")
+    screenshot("error_no_button")
+    return False
 
 
-def post_thread(driver, pyag, tweets: list[str]) -> bool:
-    """Publica un hilo de tweets: primero abre compose, luego añade replies."""
-    print(f"\n  🐦 Publicando hilo de {len(tweets)} tweets...")
-    
-    # Abrir compose en nueva pestaña
-    open_twitter_compose(driver)
-    time.sleep(random.uniform(2, 3))
-    
-    # Tweet 1
-    print(f"\n  [1/{len(tweets)}] Primer tweet...")
-    ok = post_tweet_in_compose(driver, pyag, tweets[0])
-    if not ok:
-        return False
-    
-    # Para tweets 2 y 3: responder al propio tweet
-    for i, tw in enumerate(tweets[1:], start=2):
-        time.sleep(random.uniform(8, 15))  # Espera natural entre tweets del hilo
-        print(f"\n  [{i}/{len(tweets)}] Reply al hilo...")
-        
-        # Buscar botón de reply en el tweet recién publicado
-        reply_btn = wait_for_element(driver, '[data-testid="reply"]', timeout=10)
-        if reply_btn:
-            rx, ry = get_element_center(driver, reply_btn)
-            human_click(pyag, rx, ry)
-            time.sleep(random.uniform(1.5, 2.5))
-            screenshot(f"compose_reply_{i}")
-            ok = post_tweet_in_compose(driver, pyag, tw, is_reply=True)
-        else:
-            # Fallback: abrir compose en nueva pestaña con @mention
-            open_twitter_compose(driver)
-            time.sleep(2)
-            ok = post_tweet_in_compose(driver, pyag, tw)
-        
+def post_thread(driver, tweets: list[str]) -> bool:
+    """Publica cada tweet del hilo desde el composer del home."""
+    print(f"\n  🐦 Publicando {len(tweets)} tweets...")
+
+    for i, tw in enumerate(tweets, 1):
+        print(f"\n  [{i}/{len(tweets)}] Navegando a home para el tweet {i}...")
+        driver.get("https://x.com/home")
+        time.sleep(random.uniform(3, 5))
+        screenshot(f"home_before_tweet{i}")
+
+        ok = post_tweet_in_compose(driver, tw)
         if not ok:
-            print(f"  ⚠️  Falló tweet {i}, continuando...")
-    
+            print(f"  ⚠️  Falló tweet {i}, continuando con el siguiente...")
+        else:
+            # Pausa humana entre tweets
+            if i < len(tweets):
+                wait = random.uniform(8, 15)
+                print(f"  ⏳ Esperando {wait:.0f}s antes del siguiente tweet...")
+                time.sleep(wait)
+
     return True
 
 
@@ -405,7 +415,7 @@ def main():
         handles_before = driver.window_handles
         
         # 5. Publicar hilo
-        ok = post_thread(driver, pyag, tweets)
+        ok = post_thread(driver, tweets)
 
         if ok:
             print(f"\n✅ Hilo publicado exitosamente en X!")
