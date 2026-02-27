@@ -1,0 +1,767 @@
+[
+  {
+    "slug": "google-gemini-2-0-flash-001--vs--meta-llama-llama-3-3-70b-instruct",
+    "model_a_id": "meta-llama/llama-3.3-70b-instruct",
+    "model_b_id": "google/gemini-2.0-flash-001",
+    "model_a_slug": "meta-llama-llama-3-3-70b-instruct",
+    "model_b_slug": "google-gemini-2-0-flash-001",
+    "name_a": "Meta: Llama 3.3 70B Instruct",
+    "name_b": "Google: Gemini 2.0 Flash"
+  },
+  {
+    "slug": "meta-llama-llama-3-3-70b-instruct--vs--qwen-qwen-2-5-72b-instruct",
+    "model_a_id": "meta-llama/llama-3.3-70b-instruct",
+    "model_b_id": "qwen/qwen-2.5-72b-instruct",
+    "model_a_slug": "meta-llama-llama-3-3-70b-instruct",
+    "model_b_slug": "qwen-qwen-2-5-72b-instruct",
+    "name_a": "Meta: Llama 3.3 70B Instruct",
+    "name_b": "Qwen2.5 72B Instruct"
+  },
+  {
+    "slug": "meta-llama-llama-3-3-70b-instruct--vs--openai-gpt-4o-mini",
+    "model_a_id": "meta-llama/llama-3.3-70b-instruct",
+    "model_b_id": "openai/gpt-4o-mini",
+    "model_a_slug": "meta-llama-llama-3-3-70b-instruct",
+    "model_b_slug": "openai-gpt-4o-mini",
+    "name_a": "Meta: Llama 3.3 70B Instruct",
+    "name_b": "OpenAI: GPT-4o-mini"
+  },
+  {
+    "slug": "meta-llama-llama-3-1-70b-instruct--vs--meta-llama-llama-3-3-70b-instruct",
+    "model_a_id": "meta-llama/llama-3.3-70b-instruct",
+    "model_b_id": "meta-llama/llama-3.1-70b-instruct",
+    "model_a_slug": "meta-llama-llama-3-3-70b-instruct",
+    "model_b_slug": "meta-llama-llama-3-1-70b-instruct",
+    "name_a": "Meta: Llama 3.3 70B Instruct",
+    "name_b": "Meta: Llama 3.1 70B Instruct"
+  },
+  {
+    "slug": "deepseek-deepseek-chat--vs--meta-llama-llama-3-3-70b-instruct",
+    "model_a_id": "meta-llama/llama-3.3-70b-instruct",
+    "model_b_id": "deepseek/deepseek-chat",
+    "model_a_slug": "meta-llama-llama-3-3-70b-instruct",
+    "model_b_slug": "deepseek-deepseek-chat",
+    "name_a": "Meta: Llama 3.3 70B Instruct",
+    "name_b": "DeepSeek: DeepSeek V3"
+  },
+  {
+    "slug": "deepseek-deepseek-r1--vs--meta-llama-llama-3-3-70b-instruct",
+    "model_a_id": "meta-llama/llama-3.3-70b-instruct",
+    "model_b_id": "deepseek/deepseek-r1",
+    "model_a_slug": "meta-llama-llama-3-3-70b-instruct",
+    "model_b_slug": "deepseek-deepseek-r1",
+    "name_a": "Meta: Llama 3.3 70B Instruct",
+    "name_b": "DeepSeek: R1"
+  },
+  {
+    "slug": "meta-llama-llama-3-3-70b-instruct--vs--mistralai-mistral-large",
+    "model_a_id": "meta-llama/llama-3.3-70b-instruct",
+    "model_b_id": "mistralai/mistral-large",
+    "model_a_slug": "meta-llama-llama-3-3-70b-instruct",
+    "model_b_slug": "mistralai-mistral-large",
+    "name_a": "Meta: Llama 3.3 70B Instruct",
+    "name_b": "Mistral Large"
+  },
+  {
+    "slug": "meta-llama-llama-3-3-70b-instruct--vs--openai-gpt-4o",
+    "model_a_id": "meta-llama/llama-3.3-70b-instruct",
+    "model_b_id": "openai/gpt-4o",
+    "model_a_slug": "meta-llama-llama-3-3-70b-instruct",
+    "model_b_slug": "openai-gpt-4o",
+    "name_a": "Meta: Llama 3.3 70B Instruct",
+    "name_b": "OpenAI: GPT-4o"
+  },
+  {
+    "slug": "meta-llama-llama-3-3-70b-instruct--vs--openai-o1",
+    "model_a_id": "meta-llama/llama-3.3-70b-instruct",
+    "model_b_id": "openai/o1",
+    "model_a_slug": "meta-llama-llama-3-3-70b-instruct",
+    "model_b_slug": "openai-o1",
+    "name_a": "Meta: Llama 3.3 70B Instruct",
+    "name_b": "OpenAI: o1"
+  },
+  {
+    "slug": "google-gemini-2-0-flash-001--vs--qwen-qwen-2-5-72b-instruct",
+    "model_a_id": "google/gemini-2.0-flash-001",
+    "model_b_id": "qwen/qwen-2.5-72b-instruct",
+    "model_a_slug": "google-gemini-2-0-flash-001",
+    "model_b_slug": "qwen-qwen-2-5-72b-instruct",
+    "name_a": "Google: Gemini 2.0 Flash",
+    "name_b": "Qwen2.5 72B Instruct"
+  },
+  {
+    "slug": "google-gemini-2-0-flash-001--vs--openai-gpt-4o-mini",
+    "model_a_id": "google/gemini-2.0-flash-001",
+    "model_b_id": "openai/gpt-4o-mini",
+    "model_a_slug": "google-gemini-2-0-flash-001",
+    "model_b_slug": "openai-gpt-4o-mini",
+    "name_a": "Google: Gemini 2.0 Flash",
+    "name_b": "OpenAI: GPT-4o-mini"
+  },
+  {
+    "slug": "google-gemini-2-0-flash-001--vs--meta-llama-llama-3-1-70b-instruct",
+    "model_a_id": "google/gemini-2.0-flash-001",
+    "model_b_id": "meta-llama/llama-3.1-70b-instruct",
+    "model_a_slug": "google-gemini-2-0-flash-001",
+    "model_b_slug": "meta-llama-llama-3-1-70b-instruct",
+    "name_a": "Google: Gemini 2.0 Flash",
+    "name_b": "Meta: Llama 3.1 70B Instruct"
+  },
+  {
+    "slug": "deepseek-deepseek-chat--vs--google-gemini-2-0-flash-001",
+    "model_a_id": "google/gemini-2.0-flash-001",
+    "model_b_id": "deepseek/deepseek-chat",
+    "model_a_slug": "google-gemini-2-0-flash-001",
+    "model_b_slug": "deepseek-deepseek-chat",
+    "name_a": "Google: Gemini 2.0 Flash",
+    "name_b": "DeepSeek: DeepSeek V3"
+  },
+  {
+    "slug": "deepseek-deepseek-r1--vs--google-gemini-2-0-flash-001",
+    "model_a_id": "google/gemini-2.0-flash-001",
+    "model_b_id": "deepseek/deepseek-r1",
+    "model_a_slug": "google-gemini-2-0-flash-001",
+    "model_b_slug": "deepseek-deepseek-r1",
+    "name_a": "Google: Gemini 2.0 Flash",
+    "name_b": "DeepSeek: R1"
+  },
+  {
+    "slug": "google-gemini-2-0-flash-001--vs--mistralai-mistral-large",
+    "model_a_id": "google/gemini-2.0-flash-001",
+    "model_b_id": "mistralai/mistral-large",
+    "model_a_slug": "google-gemini-2-0-flash-001",
+    "model_b_slug": "mistralai-mistral-large",
+    "name_a": "Google: Gemini 2.0 Flash",
+    "name_b": "Mistral Large"
+  },
+  {
+    "slug": "google-gemini-2-0-flash-001--vs--openai-gpt-4o",
+    "model_a_id": "google/gemini-2.0-flash-001",
+    "model_b_id": "openai/gpt-4o",
+    "model_a_slug": "google-gemini-2-0-flash-001",
+    "model_b_slug": "openai-gpt-4o",
+    "name_a": "Google: Gemini 2.0 Flash",
+    "name_b": "OpenAI: GPT-4o"
+  },
+  {
+    "slug": "google-gemini-2-0-flash-001--vs--openai-o1",
+    "model_a_id": "google/gemini-2.0-flash-001",
+    "model_b_id": "openai/o1",
+    "model_a_slug": "google-gemini-2-0-flash-001",
+    "model_b_slug": "openai-o1",
+    "name_a": "Google: Gemini 2.0 Flash",
+    "name_b": "OpenAI: o1"
+  },
+  {
+    "slug": "openai-gpt-4o-mini--vs--qwen-qwen-2-5-72b-instruct",
+    "model_a_id": "qwen/qwen-2.5-72b-instruct",
+    "model_b_id": "openai/gpt-4o-mini",
+    "model_a_slug": "qwen-qwen-2-5-72b-instruct",
+    "model_b_slug": "openai-gpt-4o-mini",
+    "name_a": "Qwen2.5 72B Instruct",
+    "name_b": "OpenAI: GPT-4o-mini"
+  },
+  {
+    "slug": "meta-llama-llama-3-1-70b-instruct--vs--qwen-qwen-2-5-72b-instruct",
+    "model_a_id": "qwen/qwen-2.5-72b-instruct",
+    "model_b_id": "meta-llama/llama-3.1-70b-instruct",
+    "model_a_slug": "qwen-qwen-2-5-72b-instruct",
+    "model_b_slug": "meta-llama-llama-3-1-70b-instruct",
+    "name_a": "Qwen2.5 72B Instruct",
+    "name_b": "Meta: Llama 3.1 70B Instruct"
+  },
+  {
+    "slug": "deepseek-deepseek-chat--vs--qwen-qwen-2-5-72b-instruct",
+    "model_a_id": "qwen/qwen-2.5-72b-instruct",
+    "model_b_id": "deepseek/deepseek-chat",
+    "model_a_slug": "qwen-qwen-2-5-72b-instruct",
+    "model_b_slug": "deepseek-deepseek-chat",
+    "name_a": "Qwen2.5 72B Instruct",
+    "name_b": "DeepSeek: DeepSeek V3"
+  },
+  {
+    "slug": "deepseek-deepseek-r1--vs--qwen-qwen-2-5-72b-instruct",
+    "model_a_id": "qwen/qwen-2.5-72b-instruct",
+    "model_b_id": "deepseek/deepseek-r1",
+    "model_a_slug": "qwen-qwen-2-5-72b-instruct",
+    "model_b_slug": "deepseek-deepseek-r1",
+    "name_a": "Qwen2.5 72B Instruct",
+    "name_b": "DeepSeek: R1"
+  },
+  {
+    "slug": "mistralai-mistral-large--vs--qwen-qwen-2-5-72b-instruct",
+    "model_a_id": "qwen/qwen-2.5-72b-instruct",
+    "model_b_id": "mistralai/mistral-large",
+    "model_a_slug": "qwen-qwen-2-5-72b-instruct",
+    "model_b_slug": "mistralai-mistral-large",
+    "name_a": "Qwen2.5 72B Instruct",
+    "name_b": "Mistral Large"
+  },
+  {
+    "slug": "openai-gpt-4o--vs--qwen-qwen-2-5-72b-instruct",
+    "model_a_id": "qwen/qwen-2.5-72b-instruct",
+    "model_b_id": "openai/gpt-4o",
+    "model_a_slug": "qwen-qwen-2-5-72b-instruct",
+    "model_b_slug": "openai-gpt-4o",
+    "name_a": "Qwen2.5 72B Instruct",
+    "name_b": "OpenAI: GPT-4o"
+  },
+  {
+    "slug": "openai-o1--vs--qwen-qwen-2-5-72b-instruct",
+    "model_a_id": "qwen/qwen-2.5-72b-instruct",
+    "model_b_id": "openai/o1",
+    "model_a_slug": "qwen-qwen-2-5-72b-instruct",
+    "model_b_slug": "openai-o1",
+    "name_a": "Qwen2.5 72B Instruct",
+    "name_b": "OpenAI: o1"
+  },
+  {
+    "slug": "meta-llama-llama-3-1-70b-instruct--vs--openai-gpt-4o-mini",
+    "model_a_id": "openai/gpt-4o-mini",
+    "model_b_id": "meta-llama/llama-3.1-70b-instruct",
+    "model_a_slug": "openai-gpt-4o-mini",
+    "model_b_slug": "meta-llama-llama-3-1-70b-instruct",
+    "name_a": "OpenAI: GPT-4o-mini",
+    "name_b": "Meta: Llama 3.1 70B Instruct"
+  },
+  {
+    "slug": "deepseek-deepseek-chat--vs--openai-gpt-4o-mini",
+    "model_a_id": "openai/gpt-4o-mini",
+    "model_b_id": "deepseek/deepseek-chat",
+    "model_a_slug": "openai-gpt-4o-mini",
+    "model_b_slug": "deepseek-deepseek-chat",
+    "name_a": "OpenAI: GPT-4o-mini",
+    "name_b": "DeepSeek: DeepSeek V3"
+  },
+  {
+    "slug": "deepseek-deepseek-r1--vs--openai-gpt-4o-mini",
+    "model_a_id": "openai/gpt-4o-mini",
+    "model_b_id": "deepseek/deepseek-r1",
+    "model_a_slug": "openai-gpt-4o-mini",
+    "model_b_slug": "deepseek-deepseek-r1",
+    "name_a": "OpenAI: GPT-4o-mini",
+    "name_b": "DeepSeek: R1"
+  },
+  {
+    "slug": "mistralai-mistral-large--vs--openai-gpt-4o-mini",
+    "model_a_id": "openai/gpt-4o-mini",
+    "model_b_id": "mistralai/mistral-large",
+    "model_a_slug": "openai-gpt-4o-mini",
+    "model_b_slug": "mistralai-mistral-large",
+    "name_a": "OpenAI: GPT-4o-mini",
+    "name_b": "Mistral Large"
+  },
+  {
+    "slug": "openai-gpt-4o--vs--openai-gpt-4o-mini",
+    "model_a_id": "openai/gpt-4o-mini",
+    "model_b_id": "openai/gpt-4o",
+    "model_a_slug": "openai-gpt-4o-mini",
+    "model_b_slug": "openai-gpt-4o",
+    "name_a": "OpenAI: GPT-4o-mini",
+    "name_b": "OpenAI: GPT-4o"
+  },
+  {
+    "slug": "openai-gpt-4o-mini--vs--openai-o1",
+    "model_a_id": "openai/gpt-4o-mini",
+    "model_b_id": "openai/o1",
+    "model_a_slug": "openai-gpt-4o-mini",
+    "model_b_slug": "openai-o1",
+    "name_a": "OpenAI: GPT-4o-mini",
+    "name_b": "OpenAI: o1"
+  },
+  {
+    "slug": "deepseek-deepseek-chat--vs--meta-llama-llama-3-1-70b-instruct",
+    "model_a_id": "meta-llama/llama-3.1-70b-instruct",
+    "model_b_id": "deepseek/deepseek-chat",
+    "model_a_slug": "meta-llama-llama-3-1-70b-instruct",
+    "model_b_slug": "deepseek-deepseek-chat",
+    "name_a": "Meta: Llama 3.1 70B Instruct",
+    "name_b": "DeepSeek: DeepSeek V3"
+  },
+  {
+    "slug": "deepseek-deepseek-r1--vs--meta-llama-llama-3-1-70b-instruct",
+    "model_a_id": "meta-llama/llama-3.1-70b-instruct",
+    "model_b_id": "deepseek/deepseek-r1",
+    "model_a_slug": "meta-llama-llama-3-1-70b-instruct",
+    "model_b_slug": "deepseek-deepseek-r1",
+    "name_a": "Meta: Llama 3.1 70B Instruct",
+    "name_b": "DeepSeek: R1"
+  },
+  {
+    "slug": "meta-llama-llama-3-1-70b-instruct--vs--mistralai-mistral-large",
+    "model_a_id": "meta-llama/llama-3.1-70b-instruct",
+    "model_b_id": "mistralai/mistral-large",
+    "model_a_slug": "meta-llama-llama-3-1-70b-instruct",
+    "model_b_slug": "mistralai-mistral-large",
+    "name_a": "Meta: Llama 3.1 70B Instruct",
+    "name_b": "Mistral Large"
+  },
+  {
+    "slug": "meta-llama-llama-3-1-70b-instruct--vs--openai-gpt-4o",
+    "model_a_id": "meta-llama/llama-3.1-70b-instruct",
+    "model_b_id": "openai/gpt-4o",
+    "model_a_slug": "meta-llama-llama-3-1-70b-instruct",
+    "model_b_slug": "openai-gpt-4o",
+    "name_a": "Meta: Llama 3.1 70B Instruct",
+    "name_b": "OpenAI: GPT-4o"
+  },
+  {
+    "slug": "meta-llama-llama-3-1-70b-instruct--vs--openai-o1",
+    "model_a_id": "meta-llama/llama-3.1-70b-instruct",
+    "model_b_id": "openai/o1",
+    "model_a_slug": "meta-llama-llama-3-1-70b-instruct",
+    "model_b_slug": "openai-o1",
+    "name_a": "Meta: Llama 3.1 70B Instruct",
+    "name_b": "OpenAI: o1"
+  },
+  {
+    "slug": "deepseek-deepseek-chat--vs--deepseek-deepseek-r1",
+    "model_a_id": "deepseek/deepseek-chat",
+    "model_b_id": "deepseek/deepseek-r1",
+    "model_a_slug": "deepseek-deepseek-chat",
+    "model_b_slug": "deepseek-deepseek-r1",
+    "name_a": "DeepSeek: DeepSeek V3",
+    "name_b": "DeepSeek: R1"
+  },
+  {
+    "slug": "deepseek-deepseek-chat--vs--mistralai-mistral-large",
+    "model_a_id": "deepseek/deepseek-chat",
+    "model_b_id": "mistralai/mistral-large",
+    "model_a_slug": "deepseek-deepseek-chat",
+    "model_b_slug": "mistralai-mistral-large",
+    "name_a": "DeepSeek: DeepSeek V3",
+    "name_b": "Mistral Large"
+  },
+  {
+    "slug": "deepseek-deepseek-chat--vs--openai-gpt-4o",
+    "model_a_id": "deepseek/deepseek-chat",
+    "model_b_id": "openai/gpt-4o",
+    "model_a_slug": "deepseek-deepseek-chat",
+    "model_b_slug": "openai-gpt-4o",
+    "name_a": "DeepSeek: DeepSeek V3",
+    "name_b": "OpenAI: GPT-4o"
+  },
+  {
+    "slug": "deepseek-deepseek-chat--vs--openai-o1",
+    "model_a_id": "deepseek/deepseek-chat",
+    "model_b_id": "openai/o1",
+    "model_a_slug": "deepseek-deepseek-chat",
+    "model_b_slug": "openai-o1",
+    "name_a": "DeepSeek: DeepSeek V3",
+    "name_b": "OpenAI: o1"
+  },
+  {
+    "slug": "deepseek-deepseek-r1--vs--mistralai-mistral-large",
+    "model_a_id": "deepseek/deepseek-r1",
+    "model_b_id": "mistralai/mistral-large",
+    "model_a_slug": "deepseek-deepseek-r1",
+    "model_b_slug": "mistralai-mistral-large",
+    "name_a": "DeepSeek: R1",
+    "name_b": "Mistral Large"
+  },
+  {
+    "slug": "deepseek-deepseek-r1--vs--openai-gpt-4o",
+    "model_a_id": "deepseek/deepseek-r1",
+    "model_b_id": "openai/gpt-4o",
+    "model_a_slug": "deepseek-deepseek-r1",
+    "model_b_slug": "openai-gpt-4o",
+    "name_a": "DeepSeek: R1",
+    "name_b": "OpenAI: GPT-4o"
+  },
+  {
+    "slug": "deepseek-deepseek-r1--vs--openai-o1",
+    "model_a_id": "deepseek/deepseek-r1",
+    "model_b_id": "openai/o1",
+    "model_a_slug": "deepseek-deepseek-r1",
+    "model_b_slug": "openai-o1",
+    "name_a": "DeepSeek: R1",
+    "name_b": "OpenAI: o1"
+  },
+  {
+    "slug": "mistralai-mistral-large--vs--openai-gpt-4o",
+    "model_a_id": "mistralai/mistral-large",
+    "model_b_id": "openai/gpt-4o",
+    "model_a_slug": "mistralai-mistral-large",
+    "model_b_slug": "openai-gpt-4o",
+    "name_a": "Mistral Large",
+    "name_b": "OpenAI: GPT-4o"
+  },
+  {
+    "slug": "mistralai-mistral-large--vs--openai-o1",
+    "model_a_id": "mistralai/mistral-large",
+    "model_b_id": "openai/o1",
+    "model_a_slug": "mistralai-mistral-large",
+    "model_b_slug": "openai-o1",
+    "name_a": "Mistral Large",
+    "name_b": "OpenAI: o1"
+  },
+  {
+    "slug": "openai-gpt-4o--vs--openai-o1",
+    "model_a_id": "openai/gpt-4o",
+    "model_b_id": "openai/o1",
+    "model_a_slug": "openai-gpt-4o",
+    "model_b_slug": "openai-o1",
+    "name_a": "OpenAI: GPT-4o",
+    "name_b": "OpenAI: o1"
+  },
+  {
+    "slug": "meta-llama-llama-3-3-70b-instruct--vs--openrouter-bodybuilder",
+    "model_a_id": "meta-llama/llama-3.3-70b-instruct",
+    "model_b_id": "openrouter/bodybuilder",
+    "model_a_slug": "meta-llama-llama-3-3-70b-instruct",
+    "model_b_slug": "openrouter-bodybuilder",
+    "name_a": "Meta: Llama 3.3 70B Instruct",
+    "name_b": "Body Builder (beta)"
+  },
+  {
+    "slug": "meta-llama-llama-3-3-70b-instruct--vs--openrouter-auto",
+    "model_a_id": "meta-llama/llama-3.3-70b-instruct",
+    "model_b_id": "openrouter/auto",
+    "model_a_slug": "meta-llama-llama-3-3-70b-instruct",
+    "model_b_slug": "openrouter-auto",
+    "name_a": "Meta: Llama 3.3 70B Instruct",
+    "name_b": "Auto Router"
+  },
+  {
+    "slug": "liquid-lfm2-8b-a1b--vs--meta-llama-llama-3-3-70b-instruct",
+    "model_a_id": "meta-llama/llama-3.3-70b-instruct",
+    "model_b_id": "liquid/lfm2-8b-a1b",
+    "model_a_slug": "meta-llama-llama-3-3-70b-instruct",
+    "model_b_slug": "liquid-lfm2-8b-a1b",
+    "name_a": "Meta: Llama 3.3 70B Instruct",
+    "name_b": "LiquidAI: LFM2-8B-A1B"
+  },
+  {
+    "slug": "liquid-lfm-2-2-6b--vs--meta-llama-llama-3-3-70b-instruct",
+    "model_a_id": "meta-llama/llama-3.3-70b-instruct",
+    "model_b_id": "liquid/lfm-2.2-6b",
+    "model_a_slug": "meta-llama-llama-3-3-70b-instruct",
+    "model_b_slug": "liquid-lfm-2-2-6b",
+    "name_a": "Meta: Llama 3.3 70B Instruct",
+    "name_b": "LiquidAI: LFM2-2.6B"
+  },
+  {
+    "slug": "meta-llama-llama-3-2-3b-instruct--vs--meta-llama-llama-3-3-70b-instruct",
+    "model_a_id": "meta-llama/llama-3.3-70b-instruct",
+    "model_b_id": "meta-llama/llama-3.2-3b-instruct",
+    "model_a_slug": "meta-llama-llama-3-3-70b-instruct",
+    "model_b_slug": "meta-llama-llama-3-2-3b-instruct",
+    "name_a": "Meta: Llama 3.3 70B Instruct",
+    "name_b": "Meta: Llama 3.2 3B Instruct"
+  },
+  {
+    "slug": "google-gemini-2-0-flash-001--vs--openrouter-bodybuilder",
+    "model_a_id": "google/gemini-2.0-flash-001",
+    "model_b_id": "openrouter/bodybuilder",
+    "model_a_slug": "google-gemini-2-0-flash-001",
+    "model_b_slug": "openrouter-bodybuilder",
+    "name_a": "Google: Gemini 2.0 Flash",
+    "name_b": "Body Builder (beta)"
+  },
+  {
+    "slug": "google-gemini-2-0-flash-001--vs--openrouter-auto",
+    "model_a_id": "google/gemini-2.0-flash-001",
+    "model_b_id": "openrouter/auto",
+    "model_a_slug": "google-gemini-2-0-flash-001",
+    "model_b_slug": "openrouter-auto",
+    "name_a": "Google: Gemini 2.0 Flash",
+    "name_b": "Auto Router"
+  },
+  {
+    "slug": "google-gemini-2-0-flash-001--vs--liquid-lfm2-8b-a1b",
+    "model_a_id": "google/gemini-2.0-flash-001",
+    "model_b_id": "liquid/lfm2-8b-a1b",
+    "model_a_slug": "google-gemini-2-0-flash-001",
+    "model_b_slug": "liquid-lfm2-8b-a1b",
+    "name_a": "Google: Gemini 2.0 Flash",
+    "name_b": "LiquidAI: LFM2-8B-A1B"
+  },
+  {
+    "slug": "google-gemini-2-0-flash-001--vs--liquid-lfm-2-2-6b",
+    "model_a_id": "google/gemini-2.0-flash-001",
+    "model_b_id": "liquid/lfm-2.2-6b",
+    "model_a_slug": "google-gemini-2-0-flash-001",
+    "model_b_slug": "liquid-lfm-2-2-6b",
+    "name_a": "Google: Gemini 2.0 Flash",
+    "name_b": "LiquidAI: LFM2-2.6B"
+  },
+  {
+    "slug": "google-gemini-2-0-flash-001--vs--meta-llama-llama-3-2-3b-instruct",
+    "model_a_id": "google/gemini-2.0-flash-001",
+    "model_b_id": "meta-llama/llama-3.2-3b-instruct",
+    "model_a_slug": "google-gemini-2-0-flash-001",
+    "model_b_slug": "meta-llama-llama-3-2-3b-instruct",
+    "name_a": "Google: Gemini 2.0 Flash",
+    "name_b": "Meta: Llama 3.2 3B Instruct"
+  },
+  {
+    "slug": "openrouter-bodybuilder--vs--qwen-qwen-2-5-72b-instruct",
+    "model_a_id": "qwen/qwen-2.5-72b-instruct",
+    "model_b_id": "openrouter/bodybuilder",
+    "model_a_slug": "qwen-qwen-2-5-72b-instruct",
+    "model_b_slug": "openrouter-bodybuilder",
+    "name_a": "Qwen2.5 72B Instruct",
+    "name_b": "Body Builder (beta)"
+  },
+  {
+    "slug": "openrouter-auto--vs--qwen-qwen-2-5-72b-instruct",
+    "model_a_id": "qwen/qwen-2.5-72b-instruct",
+    "model_b_id": "openrouter/auto",
+    "model_a_slug": "qwen-qwen-2-5-72b-instruct",
+    "model_b_slug": "openrouter-auto",
+    "name_a": "Qwen2.5 72B Instruct",
+    "name_b": "Auto Router"
+  },
+  {
+    "slug": "liquid-lfm2-8b-a1b--vs--qwen-qwen-2-5-72b-instruct",
+    "model_a_id": "qwen/qwen-2.5-72b-instruct",
+    "model_b_id": "liquid/lfm2-8b-a1b",
+    "model_a_slug": "qwen-qwen-2-5-72b-instruct",
+    "model_b_slug": "liquid-lfm2-8b-a1b",
+    "name_a": "Qwen2.5 72B Instruct",
+    "name_b": "LiquidAI: LFM2-8B-A1B"
+  },
+  {
+    "slug": "liquid-lfm-2-2-6b--vs--qwen-qwen-2-5-72b-instruct",
+    "model_a_id": "qwen/qwen-2.5-72b-instruct",
+    "model_b_id": "liquid/lfm-2.2-6b",
+    "model_a_slug": "qwen-qwen-2-5-72b-instruct",
+    "model_b_slug": "liquid-lfm-2-2-6b",
+    "name_a": "Qwen2.5 72B Instruct",
+    "name_b": "LiquidAI: LFM2-2.6B"
+  },
+  {
+    "slug": "meta-llama-llama-3-2-3b-instruct--vs--qwen-qwen-2-5-72b-instruct",
+    "model_a_id": "qwen/qwen-2.5-72b-instruct",
+    "model_b_id": "meta-llama/llama-3.2-3b-instruct",
+    "model_a_slug": "qwen-qwen-2-5-72b-instruct",
+    "model_b_slug": "meta-llama-llama-3-2-3b-instruct",
+    "name_a": "Qwen2.5 72B Instruct",
+    "name_b": "Meta: Llama 3.2 3B Instruct"
+  },
+  {
+    "slug": "openai-gpt-4o-mini--vs--openrouter-bodybuilder",
+    "model_a_id": "openai/gpt-4o-mini",
+    "model_b_id": "openrouter/bodybuilder",
+    "model_a_slug": "openai-gpt-4o-mini",
+    "model_b_slug": "openrouter-bodybuilder",
+    "name_a": "OpenAI: GPT-4o-mini",
+    "name_b": "Body Builder (beta)"
+  },
+  {
+    "slug": "openai-gpt-4o-mini--vs--openrouter-auto",
+    "model_a_id": "openai/gpt-4o-mini",
+    "model_b_id": "openrouter/auto",
+    "model_a_slug": "openai-gpt-4o-mini",
+    "model_b_slug": "openrouter-auto",
+    "name_a": "OpenAI: GPT-4o-mini",
+    "name_b": "Auto Router"
+  },
+  {
+    "slug": "liquid-lfm2-8b-a1b--vs--openai-gpt-4o-mini",
+    "model_a_id": "openai/gpt-4o-mini",
+    "model_b_id": "liquid/lfm2-8b-a1b",
+    "model_a_slug": "openai-gpt-4o-mini",
+    "model_b_slug": "liquid-lfm2-8b-a1b",
+    "name_a": "OpenAI: GPT-4o-mini",
+    "name_b": "LiquidAI: LFM2-8B-A1B"
+  },
+  {
+    "slug": "liquid-lfm-2-2-6b--vs--openai-gpt-4o-mini",
+    "model_a_id": "openai/gpt-4o-mini",
+    "model_b_id": "liquid/lfm-2.2-6b",
+    "model_a_slug": "openai-gpt-4o-mini",
+    "model_b_slug": "liquid-lfm-2-2-6b",
+    "name_a": "OpenAI: GPT-4o-mini",
+    "name_b": "LiquidAI: LFM2-2.6B"
+  },
+  {
+    "slug": "meta-llama-llama-3-2-3b-instruct--vs--openai-gpt-4o-mini",
+    "model_a_id": "openai/gpt-4o-mini",
+    "model_b_id": "meta-llama/llama-3.2-3b-instruct",
+    "model_a_slug": "openai-gpt-4o-mini",
+    "model_b_slug": "meta-llama-llama-3-2-3b-instruct",
+    "name_a": "OpenAI: GPT-4o-mini",
+    "name_b": "Meta: Llama 3.2 3B Instruct"
+  },
+  {
+    "slug": "meta-llama-llama-3-1-70b-instruct--vs--openrouter-bodybuilder",
+    "model_a_id": "meta-llama/llama-3.1-70b-instruct",
+    "model_b_id": "openrouter/bodybuilder",
+    "model_a_slug": "meta-llama-llama-3-1-70b-instruct",
+    "model_b_slug": "openrouter-bodybuilder",
+    "name_a": "Meta: Llama 3.1 70B Instruct",
+    "name_b": "Body Builder (beta)"
+  },
+  {
+    "slug": "meta-llama-llama-3-1-70b-instruct--vs--openrouter-auto",
+    "model_a_id": "meta-llama/llama-3.1-70b-instruct",
+    "model_b_id": "openrouter/auto",
+    "model_a_slug": "meta-llama-llama-3-1-70b-instruct",
+    "model_b_slug": "openrouter-auto",
+    "name_a": "Meta: Llama 3.1 70B Instruct",
+    "name_b": "Auto Router"
+  },
+  {
+    "slug": "liquid-lfm2-8b-a1b--vs--meta-llama-llama-3-1-70b-instruct",
+    "model_a_id": "meta-llama/llama-3.1-70b-instruct",
+    "model_b_id": "liquid/lfm2-8b-a1b",
+    "model_a_slug": "meta-llama-llama-3-1-70b-instruct",
+    "model_b_slug": "liquid-lfm2-8b-a1b",
+    "name_a": "Meta: Llama 3.1 70B Instruct",
+    "name_b": "LiquidAI: LFM2-8B-A1B"
+  },
+  {
+    "slug": "liquid-lfm-2-2-6b--vs--meta-llama-llama-3-1-70b-instruct",
+    "model_a_id": "meta-llama/llama-3.1-70b-instruct",
+    "model_b_id": "liquid/lfm-2.2-6b",
+    "model_a_slug": "meta-llama-llama-3-1-70b-instruct",
+    "model_b_slug": "liquid-lfm-2-2-6b",
+    "name_a": "Meta: Llama 3.1 70B Instruct",
+    "name_b": "LiquidAI: LFM2-2.6B"
+  },
+  {
+    "slug": "meta-llama-llama-3-1-70b-instruct--vs--meta-llama-llama-3-2-3b-instruct",
+    "model_a_id": "meta-llama/llama-3.1-70b-instruct",
+    "model_b_id": "meta-llama/llama-3.2-3b-instruct",
+    "model_a_slug": "meta-llama-llama-3-1-70b-instruct",
+    "model_b_slug": "meta-llama-llama-3-2-3b-instruct",
+    "name_a": "Meta: Llama 3.1 70B Instruct",
+    "name_b": "Meta: Llama 3.2 3B Instruct"
+  },
+  {
+    "slug": "deepseek-deepseek-chat--vs--openrouter-bodybuilder",
+    "model_a_id": "deepseek/deepseek-chat",
+    "model_b_id": "openrouter/bodybuilder",
+    "model_a_slug": "deepseek-deepseek-chat",
+    "model_b_slug": "openrouter-bodybuilder",
+    "name_a": "DeepSeek: DeepSeek V3",
+    "name_b": "Body Builder (beta)"
+  },
+  {
+    "slug": "deepseek-deepseek-chat--vs--openrouter-auto",
+    "model_a_id": "deepseek/deepseek-chat",
+    "model_b_id": "openrouter/auto",
+    "model_a_slug": "deepseek-deepseek-chat",
+    "model_b_slug": "openrouter-auto",
+    "name_a": "DeepSeek: DeepSeek V3",
+    "name_b": "Auto Router"
+  },
+  {
+    "slug": "deepseek-deepseek-chat--vs--liquid-lfm2-8b-a1b",
+    "model_a_id": "deepseek/deepseek-chat",
+    "model_b_id": "liquid/lfm2-8b-a1b",
+    "model_a_slug": "deepseek-deepseek-chat",
+    "model_b_slug": "liquid-lfm2-8b-a1b",
+    "name_a": "DeepSeek: DeepSeek V3",
+    "name_b": "LiquidAI: LFM2-8B-A1B"
+  },
+  {
+    "slug": "deepseek-deepseek-chat--vs--liquid-lfm-2-2-6b",
+    "model_a_id": "deepseek/deepseek-chat",
+    "model_b_id": "liquid/lfm-2.2-6b",
+    "model_a_slug": "deepseek-deepseek-chat",
+    "model_b_slug": "liquid-lfm-2-2-6b",
+    "name_a": "DeepSeek: DeepSeek V3",
+    "name_b": "LiquidAI: LFM2-2.6B"
+  },
+  {
+    "slug": "deepseek-deepseek-chat--vs--meta-llama-llama-3-2-3b-instruct",
+    "model_a_id": "deepseek/deepseek-chat",
+    "model_b_id": "meta-llama/llama-3.2-3b-instruct",
+    "model_a_slug": "deepseek-deepseek-chat",
+    "model_b_slug": "meta-llama-llama-3-2-3b-instruct",
+    "name_a": "DeepSeek: DeepSeek V3",
+    "name_b": "Meta: Llama 3.2 3B Instruct"
+  },
+  {
+    "slug": "deepseek-deepseek-r1--vs--openrouter-bodybuilder",
+    "model_a_id": "deepseek/deepseek-r1",
+    "model_b_id": "openrouter/bodybuilder",
+    "model_a_slug": "deepseek-deepseek-r1",
+    "model_b_slug": "openrouter-bodybuilder",
+    "name_a": "DeepSeek: R1",
+    "name_b": "Body Builder (beta)"
+  },
+  {
+    "slug": "deepseek-deepseek-r1--vs--openrouter-auto",
+    "model_a_id": "deepseek/deepseek-r1",
+    "model_b_id": "openrouter/auto",
+    "model_a_slug": "deepseek-deepseek-r1",
+    "model_b_slug": "openrouter-auto",
+    "name_a": "DeepSeek: R1",
+    "name_b": "Auto Router"
+  },
+  {
+    "slug": "deepseek-deepseek-r1--vs--liquid-lfm2-8b-a1b",
+    "model_a_id": "deepseek/deepseek-r1",
+    "model_b_id": "liquid/lfm2-8b-a1b",
+    "model_a_slug": "deepseek-deepseek-r1",
+    "model_b_slug": "liquid-lfm2-8b-a1b",
+    "name_a": "DeepSeek: R1",
+    "name_b": "LiquidAI: LFM2-8B-A1B"
+  },
+  {
+    "slug": "deepseek-deepseek-r1--vs--liquid-lfm-2-2-6b",
+    "model_a_id": "deepseek/deepseek-r1",
+    "model_b_id": "liquid/lfm-2.2-6b",
+    "model_a_slug": "deepseek-deepseek-r1",
+    "model_b_slug": "liquid-lfm-2-2-6b",
+    "name_a": "DeepSeek: R1",
+    "name_b": "LiquidAI: LFM2-2.6B"
+  },
+  {
+    "slug": "deepseek-deepseek-r1--vs--meta-llama-llama-3-2-3b-instruct",
+    "model_a_id": "deepseek/deepseek-r1",
+    "model_b_id": "meta-llama/llama-3.2-3b-instruct",
+    "model_a_slug": "deepseek-deepseek-r1",
+    "model_b_slug": "meta-llama-llama-3-2-3b-instruct",
+    "name_a": "DeepSeek: R1",
+    "name_b": "Meta: Llama 3.2 3B Instruct"
+  },
+  {
+    "slug": "mistralai-mistral-large--vs--openrouter-bodybuilder",
+    "model_a_id": "mistralai/mistral-large",
+    "model_b_id": "openrouter/bodybuilder",
+    "model_a_slug": "mistralai-mistral-large",
+    "model_b_slug": "openrouter-bodybuilder",
+    "name_a": "Mistral Large",
+    "name_b": "Body Builder (beta)"
+  },
+  {
+    "slug": "mistralai-mistral-large--vs--openrouter-auto",
+    "model_a_id": "mistralai/mistral-large",
+    "model_b_id": "openrouter/auto",
+    "model_a_slug": "mistralai-mistral-large",
+    "model_b_slug": "openrouter-auto",
+    "name_a": "Mistral Large",
+    "name_b": "Auto Router"
+  },
+  {
+    "slug": "liquid-lfm2-8b-a1b--vs--mistralai-mistral-large",
+    "model_a_id": "mistralai/mistral-large",
+    "model_b_id": "liquid/lfm2-8b-a1b",
+    "model_a_slug": "mistralai-mistral-large",
+    "model_b_slug": "liquid-lfm2-8b-a1b",
+    "name_a": "Mistral Large",
+    "name_b": "LiquidAI: LFM2-8B-A1B"
+  },
+  {
+    "slug": "liquid-lfm-2-2-6b--vs--mistralai-mistral-large",
+    "model_a_id": "mistralai/mistral-large",
+    "model_b_id": "liquid/lfm-2.2-6b",
+    "model_a_slug": "mistralai-mistral-large",
+    "model_b_slug": "liquid-lfm-2-2-6b",
+    "name_a": "Mistral Large",
+    "name_b": "LiquidAI: LFM2-2.6B"
+  },
+  {
+    "slug": "meta-llama-llama-3-2-3b-instruct--vs--mistralai-mistral-large",
+    "model_a_id": "mistralai/mistral-large",
+    "model_b_id": "meta-llama/llama-3.2-3b-instruct",
+    "model_a_slug": "mistralai-mistral-large",
+    "model_b_slug": "meta-llama-llama-3-2-3b-instruct",
+    "name_a": "Mistral Large",
+    "name_b": "Meta: Llama 3.2 3B Instruct"
+  }
+]

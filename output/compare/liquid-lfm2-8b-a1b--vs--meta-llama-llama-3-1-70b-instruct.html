@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Meta: Llama 3.1 70B Instruct vs LiquidAI: LFM2-8B-A1B — API Cost Comparison 2026</title>
+<meta name="description" content="Meta: Llama 3.1 70B Instruct costs $0.800/1M tokens vs LiquidAI: LFM2-8B-A1B at $0.0300/1M. LiquidAI: LFM2-8B-A1B is 96% cheaper. Full cost breakdown with " />
+<link rel="canonical" href="https://llm-pricing.pages.dev/compare/liquid-lfm2-8b-a1b--vs--meta-llama-llama-3-1-70b-instruct.html" />
+<meta property="og:title" content="Meta: Llama 3.1 70B Instruct vs LiquidAI: LFM2-8B-A1B — API Cost Comparison 2026" />
+<meta property="og:description" content="Meta: Llama 3.1 70B Instruct costs $0.800/1M tokens vs LiquidAI: LFM2-8B-A1B at $0.0300/1M. LiquidAI: LFM2-8B-A1B is 96% cheaper. Full cost breakdown with " />
+<meta property="og:type" content="website" />
+<link rel="sitemap" href="/sitemap.xml" />
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #0f1117; color: #e2e8f0; line-height: 1.6; }
+a { color: #60a5fa; text-decoration: none; } a:hover { text-decoration: underline; }
+.nav { background: #1e2330; border-bottom: 1px solid #2d3748; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; }
+.nav-logo { font-weight: 700; font-size: 1.1rem; color: #fff; }
+.nav-links { display: flex; gap: 24px; font-size: 0.9rem; }
+.main { max-width: 1100px; margin: 0 auto; padding: 32px 16px; }
+h1 { font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 8px; }
+h2 { font-size: 1.3rem; font-weight: 700; color: #fff; margin: 32px 0 12px; }
+h3 { font-size: 1.1rem; font-weight: 600; color: #e2e8f0; margin: 16px 0 8px; }
+.subtitle { color: #94a3b8; font-size: 1rem; margin-bottom: 32px; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 32px; }
+.stat-card { background: #1e2330; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; text-align: center; }
+.stat-val { font-size: 1.8rem; font-weight: 800; color: #fff; }
+.stat-lbl { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+.table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid #2d3748; margin-bottom: 32px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+thead { background: #1a1f2e; }
+th { padding: 12px 14px; text-align: left; color: #64748b; font-weight: 600; white-space: nowrap; cursor: pointer; user-select: none; }
+th:hover { color: #94a3b8; }
+td { padding: 11px 14px; border-top: 1px solid #1e2330; }
+tr:hover td { background: #1a1f2e; }
+.price-in { color: #4ade80; font-family: monospace; }
+.price-out { color: #60a5fa; font-family: monospace; }
+.price-tot { color: #fff; font-family: monospace; font-weight: 700; }
+.badge-free { background: #14532d; color: #4ade80; border: 1px solid #166534; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+.badge-cheap { background: #172554; color: #93c5fd; border: 1px solid #1e3a8a; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; }
+.badge-winner { background: #14532d; color: #4ade80; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+.model-link { color: #e2e8f0; font-weight: 500; } .model-link:hover { color: #60a5fa; text-decoration: none; }
+.provider { color: #64748b; font-size: 0.8rem; text-transform: capitalize; }
+.ctx { color: #94a3b8; font-family: monospace; }
+.cta { background: linear-gradient(135deg, #1e3a8a 0%, #1e2330 100%); border: 1px solid #3b82f6; border-radius: 12px; padding: 28px 32px; margin: 32px 0; text-align: center; }
+.cta h2 { margin-top: 0; margin-bottom: 8px; }
+.cta p { color: #94a3b8; margin-bottom: 20px; font-size: 0.95rem; }
+.btn { display: inline-block; background: #3b82f6; color: #fff; font-weight: 700; padding: 12px 28px; border-radius: 8px; font-size: 0.95rem; }
+.btn:hover { background: #2563eb; text-decoration: none; }
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+.compare-card { background: #1e2330; border: 1px solid #2d3748; border-radius: 10px; padding: 20px; }
+.compare-card.winner { border-color: #166534; background: #0f2318; }
+.price-big { font-size: 2rem; font-weight: 800; }
+.scenario-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.scenario-table th { background: #1a1f2e; padding: 10px 14px; text-align: right; color: #64748b; }
+.scenario-table th:first-child { text-align: left; }
+.scenario-table td { padding: 10px 14px; border-top: 1px solid #1e2330; text-align: right; font-family: monospace; }
+.scenario-table td:first-child { text-align: left; color: #94a3b8; }
+.win { color: #4ade80; font-weight: 700; }
+.breadcrumb { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
+.breadcrumb a { color: #64748b; } .breadcrumb a:hover { color: #94a3b8; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.tag { background: #1e2330; border: 1px solid #2d3748; border-radius: 6px; padding: 4px 12px; font-size: 0.8rem; color: #94a3b8; }
+.change-up { color: #f87171; } .change-down { color: #4ade80; }
+footer { text-align: center; color: #475569; font-size: 0.82rem; padding: 40px 16px; border-top: 1px solid #1e2330; margin-top: 48px; }
+@media (max-width: 640px) { .compare-grid { grid-template-columns: 1fr; } h1 { font-size: 1.4rem; } }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a class="nav-logo" href="/">⚡ LLM Pricing</a>
+  <div class="nav-links">
+    <a href="/">All Models</a>
+    <a href="/compare/">Compare</a>
+    <a href="https://stormrouter.dev" target="_blank" rel="noopener">Auto-routing →</a>
+  </div>
+</nav>
+<div class="main">
+<div class="breadcrumb"><a href="/">LLM Pricing</a> › <a href="/compare/">Compare</a> › Meta: Llama 3.1 70B Instruct vs LiquidAI: LFM2-8B-A1B</div>
+    <h1>Meta: Llama 3.1 70B Instruct vs LiquidAI: LFM2-8B-A1B — API Pricing Comparison</h1>
+    <p class="subtitle">LiquidAI: LFM2-8B-A1B is <span style="color:#4ade80;font-weight:700">96% cheaper</span> than Meta: Llama 3.1 70B Instruct at the same token volume. Data as of 2026-02-27.</p>
+    <div class="compare-grid"><div class='compare-card '><h3>Meta: Llama 3.1 70B Instruct</h3><p class='provider' style='margin-bottom:12px'>meta-llama</p><div>Input: <span class='price-in'>$0.400/1M</span></div><div>Output: <span class='price-out'>$0.400/1M</span></div><div style='border-top:1px solid #2d3748;margin-top:8px;padding-top:8px'>Total: <span class='price-tot price-big'>$0.800</span>/1M</div><div style='margin-top:8px;color:#64748b;font-size:0.85rem'>Context: 131K tokens</div><a href='/models/meta-llama-llama-3-1-70b-instruct.html' style='display:block;margin-top:12px;font-size:0.82rem;color:#60a5fa'>Full pricing details →</a></div><div class='compare-card winner'><span class="badge-winner">✓ CHEAPER</span><br><h3>LiquidAI: LFM2-8B-A1B</h3><p class='provider' style='margin-bottom:12px'>liquid</p><div>Input: <span class='price-in'>$0.0100/1M</span></div><div>Output: <span class='price-out'>$0.0200/1M</span></div><div style='border-top:1px solid #2d3748;margin-top:8px;padding-top:8px'>Total: <span class='price-tot price-big'>$0.0300</span>/1M</div><div style='margin-top:8px;color:#64748b;font-size:0.85rem'>Context: 32K tokens</div><a href='/models/liquid-lfm2-8b-a1b.html' style='display:block;margin-top:12px;font-size:0.82rem;color:#60a5fa'>Full pricing details →</a></div></div>
+    <h2>Monthly Cost Comparison</h2>
+    <div class="table-wrap"><table class="scenario-table">
+      <thead><tr>
+        <th>Monthly usage</th>
+        <th style="text-align:right">Meta: Llama 3.1 70B Instruct</th>
+        <th style="text-align:right">LiquidAI: LFM2-8B-A1B</th>
+        <th style="text-align:right">Savings with LiquidAI: LFM2-8B-A1B</th>
+      </tr></thead>
+      <tbody><tr><td>1M tokens/month</td><td>$0.80</td><td><span class='win'>$0.03</span></td><td class='win' style='font-weight:700'>$0.77</td></tr><tr><td>10M tokens/month</td><td>$8.00</td><td><span class='win'>$0.30</span></td><td class='win' style='font-weight:700'>$7.70</td></tr><tr><td>100M tokens/month</td><td>$80.00</td><td><span class='win'>$3.00</span></td><td class='win' style='font-weight:700'>$77.00</td></tr><tr><td>1B tokens/month</td><td>$800.00</td><td><span class='win'>$30.00</span></td><td class='win' style='font-weight:700'>$770.00</td></tr></tbody>
+    </table></div>
+    <div class="cta">
+      <h2>Use both automatically — let AI decide</h2>
+      <p>StormRouter routes each prompt to the cheapest model that meets your quality requirements.<br>
+      Use LiquidAI: LFM2-8B-A1B for simple tasks, Meta: Llama 3.1 70B Instruct only when complexity demands it.</p>
+      <a class="btn" href="https://stormrouter.dev" target="_blank" rel="noopener">Try StormRouter free →</a>
+    </div>
+</div>
+<footer>
+  <p>LLM Pricing — Real-time API cost comparison for ML engineers &amp; developers</p>
+  <p style="margin-top:6px">Data from <a href="https://openrouter.ai">OpenRouter</a> · Updated daily · 
+  <a href="https://stormrouter.dev">StormRouter</a> for automatic cost routing</p>
+  <p style="margin-top:6px">Last updated: 2026-02-27</p>
+</footer>
+
+<script>
+function sortTable(table, col, asc) {
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  rows.sort((a, b) => {
+    const av = a.cells[col].dataset.val || a.cells[col].innerText;
+    const bv = b.cells[col].dataset.val || b.cells[col].innerText;
+    return asc ? (isNaN(av) ? av.localeCompare(bv) : av - bv)
+               : (isNaN(av) ? bv.localeCompare(av) : bv - av);
+  });
+  rows.forEach(r => tbody.appendChild(r));
+}
+document.querySelectorAll('th[data-col]').forEach(th => {
+  let asc = true;
+  th.addEventListener('click', () => {
+    sortTable(th.closest('table'), +th.dataset.col, asc = !asc);
+  });
+});
+</script>
+
+</body>
+</html>

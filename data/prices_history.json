@@ -1,0 +1,12 @@
+{
+  "2026-02": {
+    "date": "2026-02-27",
+    "model_count": 344,
+    "avg_price_gpt4_class": 0,
+    "cheapest_paid": {
+      "name": "LiquidAI: LFM2-8B-A1B",
+      "price": 0.03
+    },
+    "free_count": 29
+  }
+}

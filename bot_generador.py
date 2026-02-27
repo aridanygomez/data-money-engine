@@ -340,7 +340,7 @@ def gemini(prompt: str, max_tokens: int = 600) -> str:
     """Llama a Gemini Flash (gratis: 1,000 req/día, 15 req/min)."""
     if not GEMINI_API_KEY:
         return ""
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.7},
