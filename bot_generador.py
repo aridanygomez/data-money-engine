@@ -49,6 +49,142 @@ PRIORITY_MODELS = [
 ]
 
 STORMROUTER_URL = "https://stormrouter.dev"
+SITE_URL = "https://llm-pricing.pages.dev"  # cambia a tu dominio Cloudflare Pages
+SITE_NAME = "LLM Pricing — Real-Time API Cost Comparison"
+
+# ─── HTML Templates ───────────────────────────────────────────────────────────
+
+CSS = """
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #0f1117; color: #e2e8f0; line-height: 1.6; }
+a { color: #60a5fa; text-decoration: none; } a:hover { text-decoration: underline; }
+.nav { background: #1e2330; border-bottom: 1px solid #2d3748; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; }
+.nav-logo { font-weight: 700; font-size: 1.1rem; color: #fff; }
+.nav-links { display: flex; gap: 24px; font-size: 0.9rem; }
+.main { max-width: 1100px; margin: 0 auto; padding: 32px 16px; }
+h1 { font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 8px; }
+h2 { font-size: 1.3rem; font-weight: 700; color: #fff; margin: 32px 0 12px; }
+h3 { font-size: 1.1rem; font-weight: 600; color: #e2e8f0; margin: 16px 0 8px; }
+.subtitle { color: #94a3b8; font-size: 1rem; margin-bottom: 32px; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 32px; }
+.stat-card { background: #1e2330; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; text-align: center; }
+.stat-val { font-size: 1.8rem; font-weight: 800; color: #fff; }
+.stat-lbl { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+.table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid #2d3748; margin-bottom: 32px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+thead { background: #1a1f2e; }
+th { padding: 12px 14px; text-align: left; color: #64748b; font-weight: 600; white-space: nowrap; cursor: pointer; user-select: none; }
+th:hover { color: #94a3b8; }
+td { padding: 11px 14px; border-top: 1px solid #1e2330; }
+tr:hover td { background: #1a1f2e; }
+.price-in { color: #4ade80; font-family: monospace; }
+.price-out { color: #60a5fa; font-family: monospace; }
+.price-tot { color: #fff; font-family: monospace; font-weight: 700; }
+.badge-free { background: #14532d; color: #4ade80; border: 1px solid #166534; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+.badge-cheap { background: #172554; color: #93c5fd; border: 1px solid #1e3a8a; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; }
+.badge-winner { background: #14532d; color: #4ade80; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+.model-link { color: #e2e8f0; font-weight: 500; } .model-link:hover { color: #60a5fa; text-decoration: none; }
+.provider { color: #64748b; font-size: 0.8rem; text-transform: capitalize; }
+.ctx { color: #94a3b8; font-family: monospace; }
+.cta { background: linear-gradient(135deg, #1e3a8a 0%, #1e2330 100%); border: 1px solid #3b82f6; border-radius: 12px; padding: 28px 32px; margin: 32px 0; text-align: center; }
+.cta h2 { margin-top: 0; margin-bottom: 8px; }
+.cta p { color: #94a3b8; margin-bottom: 20px; font-size: 0.95rem; }
+.btn { display: inline-block; background: #3b82f6; color: #fff; font-weight: 700; padding: 12px 28px; border-radius: 8px; font-size: 0.95rem; }
+.btn:hover { background: #2563eb; text-decoration: none; }
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+.compare-card { background: #1e2330; border: 1px solid #2d3748; border-radius: 10px; padding: 20px; }
+.compare-card.winner { border-color: #166534; background: #0f2318; }
+.price-big { font-size: 2rem; font-weight: 800; }
+.scenario-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.scenario-table th { background: #1a1f2e; padding: 10px 14px; text-align: right; color: #64748b; }
+.scenario-table th:first-child { text-align: left; }
+.scenario-table td { padding: 10px 14px; border-top: 1px solid #1e2330; text-align: right; font-family: monospace; }
+.scenario-table td:first-child { text-align: left; color: #94a3b8; }
+.win { color: #4ade80; font-weight: 700; }
+.breadcrumb { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
+.breadcrumb a { color: #64748b; } .breadcrumb a:hover { color: #94a3b8; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.tag { background: #1e2330; border: 1px solid #2d3748; border-radius: 6px; padding: 4px 12px; font-size: 0.8rem; color: #94a3b8; }
+.change-up { color: #f87171; } .change-down { color: #4ade80; }
+footer { text-align: center; color: #475569; font-size: 0.82rem; padding: 40px 16px; border-top: 1px solid #1e2330; margin-top: 48px; }
+@media (max-width: 640px) { .compare-grid { grid-template-columns: 1fr; } h1 { font-size: 1.4rem; } }
+"""  # noqa: E501
+
+_SORT_JS = """
+<script>
+function sortTable(table, col, asc) {
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  rows.sort((a, b) => {
+    const av = a.cells[col].dataset.val || a.cells[col].innerText;
+    const bv = b.cells[col].dataset.val || b.cells[col].innerText;
+    return asc ? (isNaN(av) ? av.localeCompare(bv) : av - bv)
+               : (isNaN(av) ? bv.localeCompare(av) : bv - av);
+  });
+  rows.forEach(r => tbody.appendChild(r));
+}
+document.querySelectorAll('th[data-col]').forEach(th => {
+  let asc = true;
+  th.addEventListener('click', () => {
+    sortTable(th.closest('table'), +th.dataset.col, asc = !asc);
+  });
+});
+</script>
+"""
+
+def _html(title: str, body: str, desc: str = "", canonical: str = "") -> str:
+    canon_tag = f'<link rel="canonical" href="{canonical}" />' if canonical else ""
+    og_desc = desc or title
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{title}</title>
+<meta name="description" content="{og_desc[:155]}" />
+{canon_tag}
+<meta property="og:title" content="{title}" />
+<meta property="og:description" content="{og_desc[:155]}" />
+<meta property="og:type" content="website" />
+<link rel="sitemap" href="/sitemap.xml" />
+<style>{CSS}</style>
+</head>
+<body>
+<nav class="nav">
+  <a class="nav-logo" href="/">⚡ LLM Pricing</a>
+  <div class="nav-links">
+    <a href="/">All Models</a>
+    <a href="/compare/">Compare</a>
+    <a href="{STORMROUTER_URL}" target="_blank" rel="noopener">Auto-routing →</a>
+  </div>
+</nav>
+<div class="main">
+{body}
+</div>
+<footer>
+  <p>LLM Pricing — Real-time API cost comparison for ML engineers &amp; developers</p>
+  <p style="margin-top:6px">Data from <a href="https://openrouter.ai">OpenRouter</a> · Updated daily · 
+  <a href="{STORMROUTER_URL}">StormRouter</a> for automatic cost routing</p>
+  <p style="margin-top:6px">Last updated: {TODAY}</p>
+</footer>
+{_SORT_JS}
+</body>
+</html>"""
+
+def _fmt(price: float) -> str:
+    if price == 0:
+        return "Free"
+    if price < 0.001:
+        return f"${price:.6f}"
+    if price < 0.1:
+        return f"${price:.4f}"
+    return f"${price:.3f}"
+
+def _monthly(price_per_1m: float, tokens: int) -> str:
+    if price_per_1m == 0:
+        return "$0.00"
+    c = (price_per_1m / 1_000_000) * tokens
+    return f"${c:,.2f}" if c >= 0.01 else "<$0.01"
 
 
 # ─── Step 1: Fetch LLM prices from OpenRouter ────────────────────────────────
@@ -438,8 +574,16 @@ def main():
     CONTENT_IDEAS_FILE.write_text(content_ideas, encoding="utf-8")
     print(f"  ✅ Ideas de contenido guardadas en output/content_ideas.md")
 
-    # 5. Site data
+    # 5. Site data JSON
     generate_site_data(models, descriptions)
+
+    # 6. Generate static HTML site
+    pages_index = generate_index_html(models, price_changes, descriptions)
+    pages_models = generate_model_pages(models, descriptions)
+    pages_compare = generate_comparison_pages(models, comparisons)
+    generate_sitemap(models, comparisons)
+    total_pages = pages_index + pages_models + pages_compare
+    log_entry["html_pages_generated"] = total_pages
 
     # Log final
     elapsed = round(time.time() - start, 1)
@@ -450,9 +594,310 @@ def main():
     print("=" * 50)
     print(f"✅ Bot completado en {elapsed}s")
     print(f"   📊 {len(models)} modelos · {len(comparisons)} comparaciones")
+    print(f"   🌐 {total_pages} páginas HTML generadas en output/")
     print(f"   ✍️  {len(descriptions)} descripciones generadas")
     print(f"   💡 Ideas de contenido en output/content_ideas.md")
     print(f"   {'⚠️  ' + str(len(price_changes)) + ' cambios de precio' if price_changes else '✅ Sin cambios de precio'}")
+
+
+# ─── HTML Generation ─────────────────────────────────────────────────────────
+
+def generate_index_html(models: list[dict], price_changes: list[dict], descriptions: dict) -> int:
+    """Genera output/index.html — homepage con tabla completa de precios."""
+    print("[HTML 1/4] Generando index.html...")
+    (OUTPUT_DIR / "models").mkdir(exist_ok=True)
+    (OUTPUT_DIR / "compare").mkdir(exist_ok=True)
+
+    paid = [m for m in models if not m["is_free"] and m["total_price_per_1m"] > 0]
+    free = [m for m in models if m["is_free"]]
+    priority = [m for m in models if m["id"] in PRIORITY_MODELS]
+
+    stats_html = f"""
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-val">{len(models)}</div><div class="stat-lbl">Models tracked</div></div>
+      <div class="stat-card"><div class="stat-val">{len(free)}</div><div class="stat-lbl">Free APIs</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:#4ade80">{_fmt(paid[0]["total_price_per_1m"]) if paid else "-"}</div><div class="stat-lbl">Cheapest paid /1M</div></div>
+      <div class="stat-card"><div class="stat-val">{len(set(m["provider"] for m in models))}</div><div class="stat-lbl">Providers</div></div>
+    </div>"""
+
+    # Price-change banner
+    changes_html = ""
+    if price_changes:
+        items = "".join(
+            f"<li><strong>{c['model']}</strong>: {c['direction']} {abs(c['change_pct'])}% — "
+            f"{_fmt(c['old_price'])} → <strong>{_fmt(c['new_price'])}</strong>/1M tokens</li>"
+            for c in price_changes[:8]
+        )
+        changes_html = f"""<div style="background:#1c1208;border:1px solid #854d0e;border-radius:10px;padding:16px 20px;margin-bottom:24px;">
+      <h3 style="color:#fbbf24;margin-bottom:8px">⚠️ Price changes detected today</h3>
+      <ul style="color:#fde68a;font-size:0.9rem;padding-left:16px;">{items}</ul></div>"""
+
+    def model_row(m: dict) -> str:
+        slug = m['slug']
+        badge = '<span class="badge-free">FREE</span>' if m['is_free'] else ''
+        return (
+            f"<tr>"
+            f"<td data-val='{m['name']}'><a class='model-link' href='/models/{slug}.html'>{m['name']}</a><br>"
+            f"<span class='provider'>{m['provider']}</span></td>"
+            f"<td class='price-in' data-val='{m['prompt_price_per_1m']}'>{_fmt(m['prompt_price_per_1m'])}</td>"
+            f"<td class='price-out' data-val='{m['completion_price_per_1m']}'>{_fmt(m['completion_price_per_1m'])}</td>"
+            f"<td class='price-tot' data-val='{m['total_price_per_1m']}'>{_fmt(m['total_price_per_1m'])} {badge}</td>"
+            f"<td class='ctx' data-val='{m['context_length']}'>{m['context_length']//1000}K</td>"
+            f"<td><a href='/models/{slug}.html' style='font-size:0.82rem;color:#64748b'>Details →</a></td>"
+            f"</tr>"
+        )
+
+    all_rows = "".join(model_row(m) for m in models)
+    priority_rows = "".join(model_row(m) for m in priority)
+
+    table = lambda rows: f"""<div class="table-wrap">
+    <table id="main-table">
+      <thead><tr>
+        <th data-col="0">Model ↕</th>
+        <th data-col="1">Input /1M ↕</th>
+        <th data-col="2">Output /1M ↕</th>
+        <th data-col="3">Total /1M ↕</th>
+        <th data-col="4">Context ↕</th>
+        <th></th>
+      </tr></thead>
+      <tbody>{rows}</tbody>
+    </table></div>"""
+
+    cta = f"""<div class="cta">
+    <h2>Stop choosing models manually — automate it</h2>
+    <p>StormRouter routes each request to the cheapest model that meets your quality bar.<br>
+    Teams save <strong>60–80%</strong> on LLM API costs without changing their code.</p>
+    <a class="btn" href="{STORMROUTER_URL}" target="_blank" rel="noopener">Try StormRouter free — 14 days →</a>
+    </div>"""
+
+    body = f"""<h1>LLM API Pricing — Real-Time Cost Comparison</h1>
+    <p class="subtitle">Compare {len(models)}+ language model APIs. Find the cheapest model for your use case. Updated daily.</p>
+    {stats_html}
+    {changes_html}
+    {cta}
+    <h2>Most Popular Models</h2>
+    {table(priority_rows)}
+    <h2>All Models — Full Comparison ({len(models)} total)</h2>
+    <p style="color:#64748b;font-size:0.85rem;margin-bottom:12px">Click any column header to sort · <a href="/compare/">See head-to-head comparisons →</a></p>
+    {table(all_rows)}"""
+
+    html = _html(
+        title="LLM API Pricing 2026 — Compare OpenAI, Anthropic, Google, Meta & More",
+        body=body,
+        desc=f"Real-time pricing for {len(models)}+ LLM APIs. Compare GPT-4o, Claude, Gemini, Llama, Mistral and 150+ more. Find the cheapest model for chatbots, RAG, code generation.",
+        canonical=f"{SITE_URL}/",
+    )
+    (OUTPUT_DIR / "index.html").write_text(html, encoding="utf-8")
+    print(f"  ✅ index.html ({len(models)} modelos)")
+    return len(models)
+
+
+def generate_model_pages(models: list[dict], descriptions: dict) -> int:
+    """Genera output/models/<slug>.html para cada modelo."""
+    print("[HTML 2/4] Generando páginas individuales de modelos...")
+    models_dir = OUTPUT_DIR / "models"
+    models_dir.mkdir(exist_ok=True)
+    model_map = {m["id"]: m for m in models}
+    count = 0
+
+    SCENARIOS = [
+        ("100K tokens/month", 100_000),
+        ("1M tokens/month", 1_000_000),
+        ("10M tokens/month", 10_000_000),
+        ("100M tokens/month", 100_000_000),
+    ]
+
+    for m in models:
+        slug = m["slug"]
+        desc = descriptions.get(m["id"], "")
+        paid = [x for x in models if not x["is_free"] and x["total_price_per_1m"] > 0]
+        rank = next((i+1 for i, x in enumerate(paid) if x["slug"] == slug), None)
+
+        rank_html = f'<span class="badge-cheap">#{rank} cheapest paid</span>' if rank and rank <= 20 else ""
+        free_badge = '<span class="badge-free">FREE</span>' if m["is_free"] else ""
+
+        scenarios_rows = "".join(
+            f"<tr><td>{label}</td><td class='win'>{_monthly(m['prompt_price_per_1m']*0.5 + m['completion_price_per_1m']*0.5, t)}</td></tr>"
+            for label, t in SCENARIOS
+        )
+
+        # Similar models (same provider or similar price)
+        similar = [x for x in models if x["slug"] != slug and (
+            x["provider"] == m["provider"] or
+            abs(x["total_price_per_1m"] - m["total_price_per_1m"]) < max(m["total_price_per_1m"] * 0.5, 0.5)
+        )][:6]
+        similar_html = "".join(
+            f"<a href='/models/{s['slug']}.html' style='display:block;padding:8px 12px;background:#1e2330;border:1px solid #2d3748;border-radius:8px;margin-bottom:8px;'>"
+            f"<span style='color:#e2e8f0;font-weight:500'>{s['name']}</span><br>"
+            f"<span style='color:#4ade80;font-family:monospace;font-size:0.85rem'>{_fmt(s['total_price_per_1m'])}/1M</span></a>"
+            for s in similar
+        ) if similar else ""
+
+        # Top comparison links
+        comp_links = ""
+        for other_id in PRIORITY_MODELS[:6]:
+            other = model_map.get(other_id)
+            if not other or other["slug"] == slug:
+                continue
+            a_slug, b_slug = sorted([slug, other["slug"]])
+            comp_links += f"<a href='/compare/{a_slug}--vs--{b_slug}.html' style='display:inline-block;margin:4px;padding:6px 12px;background:#1e2330;border:1px solid #2d3748;border-radius:6px;font-size:0.83rem;color:#94a3b8;'>{m['name']} vs {other['name']} →</a>"
+
+        body = f"""<div class="breadcrumb"><a href="/">LLM Pricing</a> › <span style="text-transform:capitalize">{m['provider']}</span> › {m['name']}</div>
+    <h1>{m['name']} API Pricing {free_badge}</h1>
+    <p class="subtitle">by {m['provider']} · {m['context_length']//1000}K context window · {rank_html}</p>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-val price-in">{_fmt(m['prompt_price_per_1m'])}</div><div class="stat-lbl">Input /1M tokens</div></div>
+      <div class="stat-card"><div class="stat-val price-out">{_fmt(m['completion_price_per_1m'])}</div><div class="stat-lbl">Output /1M tokens</div></div>
+      <div class="stat-card"><div class="stat-val">{m['context_length']//1000}K</div><div class="stat-lbl">Context window</div></div>
+    </div>
+    {f'<p style="color:#94a3b8;line-height:1.8;margin-bottom:24px">{desc}</p>' if desc else ''}
+    <h2>Monthly Cost Examples</h2>
+    <p style="color:#64748b;font-size:0.85rem;margin-bottom:12px">Assuming 50% input / 50% output token split</p>
+    <div class="table-wrap"><table class="scenario-table">
+      <thead><tr><th>Usage</th><th>Monthly cost</th></tr></thead>
+      <tbody>{scenarios_rows}</tbody>
+    </table></div>
+    {'<h2>Compare with other models</h2>' + comp_links if comp_links else ''}
+    <div class="cta">
+      <h2>Automate your model selection</h2>
+      <p>StormRouter sends each request to the cheapest model that can handle it.<br>Only use {m['name']} when your quality requirements demand it.</p>
+      <a class="btn" href="{STORMROUTER_URL}" target="_blank" rel="noopener">Try StormRouter free →</a>
+    </div>
+    {'<h2>Similar models</h2>' + similar_html if similar_html else ''}"""
+
+        html = _html(
+            title=f"{m['name']} API Pricing — Cost Per Token & Calculator 2026",
+            body=body,
+            desc=f"{m['name']} costs {_fmt(m['prompt_price_per_1m'])}/1M input tokens and {_fmt(m['completion_price_per_1m'])}/1M output tokens. {m['context_length']//1000}K context. Monthly cost examples and comparisons.",
+            canonical=f"{SITE_URL}/models/{slug}.html",
+        )
+        (models_dir / f"{slug}.html").write_text(html, encoding="utf-8")
+        count += 1
+
+    print(f"  ✅ {count} páginas de modelo en output/models/")
+    return count
+
+
+def generate_comparison_pages(models: list[dict], comparisons: list[dict]) -> int:
+    """Genera output/compare/<a-vs-b>.html para cada par de modelos."""
+    print("[HTML 3/4] Generando páginas de comparación...")
+    compare_dir = OUTPUT_DIR / "compare"
+    compare_dir.mkdir(exist_ok=True)
+    model_map = {m["slug"]: m for m in models}
+    count = 0
+
+    SCENARIOS = [
+        ("1M tokens", 1_000_000),
+        ("10M tokens", 10_000_000),
+        ("100M tokens", 100_000_000),
+        ("1B tokens", 1_000_000_000),
+    ]
+
+    # Index page for /compare/
+    comp_index_links = ""
+
+    for comp in comparisons:
+        a = model_map.get(comp["model_a_slug"])
+        b = model_map.get(comp["model_b_slug"])
+        if not a or not b:
+            continue
+
+        cheap, expensive = (a, b) if a["total_price_per_1m"] <= b["total_price_per_1m"] else (b, a)
+        savings_pct = 0
+        if expensive["total_price_per_1m"] > 0:
+            savings_pct = round((1 - cheap["total_price_per_1m"] / expensive["total_price_per_1m"]) * 100, 0)
+
+        def card(m: dict) -> str:
+            is_win = m["slug"] == cheap["slug"]
+            border = "winner" if is_win else ""
+            win_badge = '<span class="badge-winner">✓ CHEAPER</span><br>' if is_win else ""
+            return (
+                f"<div class='compare-card {border}'>"
+                f"{win_badge}"
+                f"<h3>{m['name']}</h3>"
+                f"<p class='provider' style='margin-bottom:12px'>{m['provider']}</p>"
+                f"<div>Input: <span class='price-in'>{_fmt(m['prompt_price_per_1m'])}/1M</span></div>"
+                f"<div>Output: <span class='price-out'>{_fmt(m['completion_price_per_1m'])}/1M</span></div>"
+                f"<div style='border-top:1px solid #2d3748;margin-top:8px;padding-top:8px'>Total: <span class='price-tot price-big'>{_fmt(m['total_price_per_1m'])}</span>/1M</div>"
+                f"<div style='margin-top:8px;color:#64748b;font-size:0.85rem'>Context: {m['context_length']//1000}K tokens</div>"
+                f"<a href='/models/{m['slug']}.html' style='display:block;margin-top:12px;font-size:0.82rem;color:#60a5fa'>Full pricing details →</a>"
+                f"</div>"
+            )
+
+        scenario_rows = ""
+        for label, tokens in SCENARIOS:
+            cost_a = (a["total_price_per_1m"] / 1_000_000) * tokens
+            cost_b = (b["total_price_per_1m"] / 1_000_000) * tokens
+            diff = abs(cost_a - cost_b)
+            ca_str = _monthly(a["total_price_per_1m"], tokens)
+            cb_str = _monthly(b["total_price_per_1m"], tokens)
+            ca_html = f"<span class='win'>{ca_str}</span>" if a["slug"] == cheap["slug"] else ca_str
+            cb_html = f"<span class='win'>{cb_str}</span>" if b["slug"] == cheap["slug"] else cb_str
+            scenario_rows += f"<tr><td>{label}/month</td><td>{ca_html}</td><td>{cb_html}</td><td class='win' style='font-weight:700'>${diff:,.2f}</td></tr>"
+
+        slug = comp["slug"]
+        comp_index_links += f"<a href='{slug}.html' style='display:block;padding:8px 14px;background:#1e2330;border:1px solid #2d3748;border-radius:8px;margin-bottom:6px;font-size:0.88rem;color:#e2e8f0;'>{a['name']} vs {b['name']}</a>"
+
+        body = f"""<div class="breadcrumb"><a href="/">LLM Pricing</a> › <a href="/compare/">Compare</a> › {a['name']} vs {b['name']}</div>
+    <h1>{a['name']} vs {b['name']} — API Pricing Comparison</h1>
+    <p class="subtitle">{cheap['name']} is <span style="color:#4ade80;font-weight:700">{savings_pct:.0f}% cheaper</span> than {expensive['name']} at the same token volume. Data as of {TODAY}.</p>
+    <div class="compare-grid">{card(a)}{card(b)}</div>
+    <h2>Monthly Cost Comparison</h2>
+    <div class="table-wrap"><table class="scenario-table">
+      <thead><tr>
+        <th>Monthly usage</th>
+        <th style="text-align:right">{a['name']}</th>
+        <th style="text-align:right">{b['name']}</th>
+        <th style="text-align:right">Savings with {cheap['name']}</th>
+      </tr></thead>
+      <tbody>{scenario_rows}</tbody>
+    </table></div>
+    <div class="cta">
+      <h2>Use both automatically — let AI decide</h2>
+      <p>StormRouter routes each prompt to the cheapest model that meets your quality requirements.<br>
+      Use {cheap['name']} for simple tasks, {expensive['name']} only when complexity demands it.</p>
+      <a class="btn" href="{STORMROUTER_URL}" target="_blank" rel="noopener">Try StormRouter free →</a>
+    </div>"""
+
+        html = _html(
+            title=f"{a['name']} vs {b['name']} — API Cost Comparison 2026",
+            body=body,
+            desc=f"{a['name']} costs {_fmt(a['total_price_per_1m'])}/1M tokens vs {b['name']} at {_fmt(b['total_price_per_1m'])}/1M. {cheap['name']} is {savings_pct:.0f}% cheaper. Full cost breakdown with monthly examples.",
+            canonical=f"{SITE_URL}/compare/{slug}.html",
+        )
+        (compare_dir / f"{slug}.html").write_text(html, encoding="utf-8")
+        count += 1
+
+    # Write compare index
+    index_body = f"""<h1>LLM Model Comparisons</h1>
+    <p class="subtitle">{len(comparisons)} head-to-head API cost comparisons. Click any pair to see monthly cost breakdown.</p>
+    <div style="columns:2;column-gap:16px">{comp_index_links}</div>"""
+    (compare_dir / "index.html").write_text(
+        _html("LLM API Comparisons 2026 — Head-to-Head Pricing", index_body,
+              desc="Compare LLM API prices head-to-head. GPT-4o vs Claude, Gemini vs Llama, and 300+ more pairs."),
+        encoding="utf-8",
+    )
+
+    print(f"  ✅ {count} páginas de comparación en output/compare/")
+    return count
+
+
+def generate_sitemap(models: list[dict], comparisons: list[dict]):
+    """Genera output/sitemap.xml para Google."""
+    print("[HTML 4/4] Generando sitemap.xml...")
+    urls = [f"{SITE_URL}/", f"{SITE_URL}/compare/"]
+    urls += [f"{SITE_URL}/models/{m['slug']}.html" for m in models]
+    urls += [f"{SITE_URL}/compare/{c['slug']}.html" for c in comparisons]
+
+    xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    priorities = {f"{SITE_URL}/": "1.0", f"{SITE_URL}/compare/": "0.8"}
+    for url in urls:
+        p = priorities.get(url, "0.7" if "/models/" in url else "0.6")
+        xml += f"  <url><loc>{url}</loc><lastmod>{TODAY}</lastmod><priority>{p}</priority></url>\n"
+    xml += "</urlset>"
+    (OUTPUT_DIR / "sitemap.xml").write_text(xml, encoding="utf-8")
+    print(f"  ✅ sitemap.xml ({len(urls)} URLs)")
 
 
 def _save_log(entry: dict):

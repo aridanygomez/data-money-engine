@@ -30,6 +30,6 @@ jobs:
         run: |
           git config --global user.name 'DataBot'
           git config --global user.email 'bot@github.com'
-          git add .
-          git commit -m "Auto: actualizacion $(date +'%Y-%m-%d')" || exit 0
+          git add data/ output/
+          git commit -m "Auto: $(date +'%Y-%m-%d') — $(python -c "import json,pathlib; d=json.loads(pathlib.Path('data/models.json').read_text()) if pathlib.Path('data/models.json').exists() else []; print(f'{len(d)} models')" 2>/dev/null || echo 'data updated')" || exit 0
           git push
