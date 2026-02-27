@@ -715,6 +715,40 @@ def generate_site_data(models: list[dict], descriptions: dict):
     print(f"  ✅ site_data.json generado ({len(site_data['priority_models'])} modelos prioritarios)")
 
 
+# ─── Step 6: Push data to Cloudflare D1 (micro-SaaS backbone) ───────────────
+
+def push_to_d1(models: list[dict], price_changes: list[dict]) -> bool:
+    """
+    Envia los precios frescos al Cloudflare Worker (/internal/sync).
+    El Worker hace upsert en D1, registra historial y dispara alertas.
+    Requiere env vars: CF_WORKER_URL, CF_INTERNAL_SECRET
+    """
+    worker_url = os.environ.get("CF_WORKER_URL", "")
+    secret = os.environ.get("CF_INTERNAL_SECRET", "")
+
+    if not worker_url or not secret:
+        print("  [D1] CF_WORKER_URL / CF_INTERNAL_SECRET no configurados — skip")
+        return False
+
+    print(f"[6/6] Sincronizando {len(models)} modelos con Cloudflare D1...")
+    try:
+        resp = requests.post(
+            f"{worker_url.rstrip('/')}/internal/sync",
+            headers={"X-Internal-Secret": secret, "Content-Type": "application/json"},
+            json={"models": models, "date": TODAY},
+            timeout=60,
+        )
+        resp.raise_for_status()
+        result = resp.json()
+        print(f"  ✅ D1 sync OK — {result.get('models_synced')} modelos, "
+              f"{result.get('price_changes')} cambios, "
+              f"{result.get('alerts_fired')} alertas disparadas")
+        return True
+    except Exception as e:
+        print(f"  ⚠️  D1 sync failed (no crítico): {e}")
+        return False
+
+
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
 def main():
@@ -792,6 +826,9 @@ def main():
     print(f"   ✍️  {len(descriptions)} descripciones generadas")
     print(f"   💡 Ideas de contenido en output/content_ideas.md")
     print(f"   {'⚠️  ' + str(len(price_changes)) + ' cambios de precio' if price_changes else '✅ Sin cambios de precio'}")
+
+    # 7. Push a Cloudflare D1 (activa alertas Slack/Discord para suscriptores)
+    push_to_d1(models, price_changes)
 
 
 # ─── HTML Generation ─────────────────────────────────────────────────────────

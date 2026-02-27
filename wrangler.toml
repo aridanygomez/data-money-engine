@@ -1,0 +1,25 @@
+name            = "llm-pricing-api"
+main            = "cloudflare/worker.js"
+compatibility_date = "2025-01-01"
+node_compat     = false
+
+# ─── D1 Database ─────────────────────────────────────────────────────────────
+[[d1_databases]]
+binding         = "DB"
+database_name   = "llm-pricing"
+database_id     = "REPLACE_WITH_YOUR_D1_ID"   # wrangler d1 create llm-pricing
+
+# ─── Secrets (wrangler secret put NOMBRE) ────────────────────────────────────
+# INTERNAL_SECRET   → token secreto para autenticar el bot (genera uno random)
+# POLAR_WEBHOOK_SECRET → desde Polar.sh → Settings → Webhooks
+
+# ─── Routes ──────────────────────────────────────────────────────────────────
+# Descomenta cuando tengas dominio custom en Cloudflare:
+# routes = [{ pattern = "api.llm-pricing.dev/*", zone_name = "llm-pricing.dev" }]
+
+# ─── Environments ────────────────────────────────────────────────────────────
+[env.production]
+name = "llm-pricing-api-prod"
+
+[env.staging]
+name = "llm-pricing-api-staging"

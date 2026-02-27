@@ -28,6 +28,8 @@ jobs:
       - name: Ejecutar bot generador
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CF_WORKER_URL: ${{ secrets.CF_WORKER_URL }}
+          CF_INTERNAL_SECRET: ${{ secrets.CF_INTERNAL_SECRET }}
         run: python bot_generador.py
 
       - name: Publicar en redes sociales
