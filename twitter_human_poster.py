@@ -10,7 +10,7 @@ twitter_human_poster.py — Publica en X/Twitter con Chrome real + movimiento hu
 SETUP (una sola vez):
   1. pip install selenium pyautogui Pillow undetected-chromedriver
   2. Abre Chrome MANUALMENTE con debugging:
-     "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --no-first-run
+     chrome.exe --remote-debugging-port=9222 --no-first-run
   3. Loguéate en twitter.com en ese Chrome
   4. Corre este script: python twitter_human_poster.py
 
@@ -106,7 +106,7 @@ def build_tweet_thread(model: dict) -> list[str]:
         f"📊 I track 300+ LLMs in real-time (open source bot, updates daily):\n"
         f"{url}\n\n"
         f"Bookmark it. Your AI infra bill will thank you 🔖\n"
-        f"#AI #LLM #AITools #DevTools #MachineLearning"
+        f"#LLM #AI #GenerativeAI #MachineLearning #OpenAI #Anthropic #DeepSeek #MLOps #BuildInPublic"
     )
     # Truncar a 280 chars por seguridad
     return [t[:280] for t in [t1, t2, t3]]

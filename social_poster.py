@@ -42,17 +42,21 @@ def load_price_data() -> list[dict]:
     """Carga modelos con precios desde el JSON generado por el bot."""
     models_file = DATA_DIR / "site_data.json"
     if not models_file.exists():
-        # Fallback: leer models.json directo
         models_file = DATA_DIR / "models.json"
     if not models_file.exists():
         print("⚠️  No hay datos de precios disponibles.")
         return []
     try:
         data = json.loads(models_file.read_text(encoding="utf-8"))
-        if isinstance(data, dict) and "top_models" in data:
-            return data["top_models"]
         if isinstance(data, list):
             return data
+        if isinstance(data, dict):
+            # site_data.json tiene cheapest_paid + priority_models
+            return (
+                data.get("cheapest_paid") or
+                data.get("priority_models") or
+                data.get("top_models") or []
+            )
     except Exception as e:
         print(f"⚠️  Error leyendo datos: {e}")
     return []
@@ -60,18 +64,30 @@ def load_price_data() -> list[dict]:
 
 def get_cheapest_models(models: list[dict]) -> tuple[dict | None, dict | None]:
     """Retorna (más barato, segundo más barato) de los modelos con precio > 0."""
-    paid = [m for m in models if float(m.get("prompt_price_per_m", m.get("pricing", {}).get("prompt", 0) if isinstance(m.get("pricing"), dict) else 0) or 0) > 0]
-    paid.sort(key=lambda m: float(m.get("prompt_price_per_m", 0) or 0))
+    def _p(m):
+        return float(
+            m.get("prompt_price_per_1m") or
+            m.get("prompt_price_per_m") or
+            (m.get("pricing", {}).get("prompt", 0) if isinstance(m.get("pricing"), dict) else 0)
+            or 0
+        )
+    paid = [m for m in models if 0 < _p(m) < 999999]
+    paid.sort(key=_p)
     return (paid[0] if len(paid) > 0 else None,
             paid[1] if len(paid) > 1 else None)
 
 
 def get_most_expensive(models: list[dict]) -> dict | None:
     """Retorna el modelo más caro (bueno para comparativas de ahorro)."""
-    paid = [m for m in models if float(m.get("prompt_price_per_m", 0) or 0) > 0]
+    def _p(m):
+        return float(
+            m.get("prompt_price_per_1m") or
+            m.get("prompt_price_per_m") or 0
+        )
+    paid = [m for m in models if 0 < _p(m) < 999999]
     if not paid:
         return None
-    paid.sort(key=lambda m: float(m.get("prompt_price_per_m", 0) or 0), reverse=True)
+    paid.sort(key=_p, reverse=True)
     return paid[0]
 
 
@@ -154,12 +170,13 @@ def post_twitter_thread(cheapest: dict, runner_up: dict | None, compare_url: str
         t2_id = r2.data["id"]
         time.sleep(2)
 
-        # Tweet 3 — CTA con link
+        # Tweet 3 — CTA con link + hashtags nicho AI
         tweet3_text = (
-            f"📊 Full comparison + 300+ models ranked by real-time price:\n"
+            f"📊 Full comparison — 300+ models ranked by real-time price:\n"
             f"{compare_url}\n\n"
-            f"Bookmark this. Token deflation is accelerating in 2026. 🔖\n\n"
-            f"#AI #LLM #MachineLearning #AITools #DevTools"
+            f"Bookmark it. Token deflation won't stop in 2026. 🔖\n\n"
+            f"#LLM #AI #MachineLearning #GenerativeAI #OpenAI #Anthropic "
+            f"#DeepSeek #AIEngineering #MLOps #DevTools #BuildInPublic"
         )
         client.create_tweet(text=tweet3_text, in_reply_to_tweet_id=t2_id)
 
@@ -173,8 +190,49 @@ def post_twitter_thread(cheapest: dict, runner_up: dict | None, compare_url: str
 
 # ─── REDDIT ──────────────────────────────────────────────────────────────────
 
-def post_reddit(cheapest: dict, expensive: dict | None, compare_url: str) -> bool:
-    """Publica en r/LocalLLaMA y r/MachineLearning."""
+def _get_price(m: dict) -> float:
+    """Extrae precio de prompt con compatibilidad de campos."""
+    return float(
+        m.get("prompt_price_per_1m") or
+        m.get("prompt_price_per_m") or
+        (m.get("pricing", {}).get("prompt", 0) if isinstance(m.get("pricing"), dict) else 0)
+        or 0
+    )
+
+
+def build_reddit_table(models: list[dict], top_n: int = 7) -> str:
+    """
+    Construye una tabla Markdown nativa de Reddit con los N modelos más baratos.
+    ESTRATEGIA ANTI-BAN: sin links en el body, datos puros como valor.
+    """
+    # Filtrar modelos con precio real positivo
+    paid = [m for m in models if 0 < _get_price(m) < 999999]
+    paid.sort(key=_get_price)
+    top = paid[:top_n]
+
+    lines = [
+        f"| # | Model | Provider | Input $/1M | Context |",
+        f"|---|-------|----------|-----------|---------|" 
+    ]
+    for i, m in enumerate(top, 1):
+        name     = m.get("name", m.get("id", "?"))[:35]
+        provider = m.get("provider", m.get("id","?").split("/")[0])[:15]
+        price    = _get_price(m)
+        ctx_k    = int(m.get("context_length", 0) / 1024)
+        ctx_str  = f"{ctx_k}K" if ctx_k else "—"
+        lines.append(f"| {i} | {name} | {provider} | ${price:.4f} | {ctx_str} |")
+
+    return "\n".join(lines)
+
+
+def post_reddit(models: list[dict], cheapest: dict, expensive: dict | None, compare_url: str) -> bool:
+    """
+    Publica en r/LocalLLaMA usando la estrategia 'Oráculo de Datos':
+    - Tabla nativa Markdown (sin links directos en el body)
+    - Link sutil al final como «fuente» con texto, no URL cruda
+    - Pregunta abierta para fomentar debate orgánico
+    - El link real va en el perfil del usuario, no en el post
+    """
     try:
         import praw
     except ImportError:
@@ -191,43 +249,55 @@ def post_reddit(cheapest: dict, expensive: dict | None, compare_url: str) -> boo
             client_secret=REDDIT_CLIENT_SECRET,
             username=REDDIT_USERNAME,
             password=REDDIT_PASSWORD,
-            user_agent=f"LLMPricingBot/1.0 by u/{REDDIT_USERNAME}",
+            user_agent=f"DataResearchBot/1.0 by u/{REDDIT_USERNAME}",
         )
 
-        name_a = cheapest.get("name", cheapest.get("id", "Unknown"))
-        price_a = float(cheapest.get("prompt_price_per_m", 0) or 0)
+        name_a  = cheapest.get("name", cheapest.get("id", "Unknown"))
+        price_a = _get_price(cheapest)
 
-        title = f"Token Deflation 2026: {name_a} now at ${price_a:.4f}/1M tokens — is API pricing in freefall?"
+        # Tabla nativa con top 7 modelos
+        table = build_reddit_table(models, top_n=7)
 
-        body_lines = [
-            f"I've been tracking LLM API prices daily via an open-source bot and today's data is wild.",
-            f"",
-            f"**Cheapest model right now:** {name_a} at **${price_a:.4f} per 1M input tokens**",
-        ]
+        # Contexto de precio comparativo (sin links, solo datos)
+        context_block = ""
         if expensive:
-            name_exp = expensive.get("name", expensive.get("id", "Unknown"))
-            price_exp = float(expensive.get("prompt_price_per_m", 0) or 0)
-            ratio = round(price_exp / price_a) if price_a > 0 else "∞"
-            body_lines += [
-                f"",
-                f"**Comparison:** {name_exp} is **{ratio}x more expensive** at ${price_exp:.2f}/1M",
-                f"",
-                f"That's not a rounding error — that's an order-of-magnitude difference for similar quality tasks.",
-            ]
+            name_exp  = expensive.get("name", expensive.get("id", "Unknown"))
+            price_exp = _get_price(expensive)
+            if price_a > 0 and price_exp > 0:
+                ratio   = round(price_exp / price_a)
+                saving  = round((1 - price_a / price_exp) * 100)
+                context_block = (
+                    f"\n**Cost gap today:** {name_exp} costs **{ratio}x more** than {name_a} "
+                    f"for the same prompt volume — a {saving}% overpay if you're not benchmarking regularly.\n"
+                )
 
-        body_lines += [
-            f"",
-            f"**Real-time tracker (300+ models):** {compare_url}",
-            f"",
-            f"My question for this community: at what price point does it stop making sense to self-host? "
-            f"If {name_a} is this cheap, is running your own GPU cluster still worth it in 2026?",
-            f"",
-            f"Happy to share the full dataset if anyone wants to dig into the numbers.",
-        ]
+        # Título que genera debate (sin ventas)
+        title = (
+            f"I scraped OpenRouter pricing for all {len(models)} models today "
+            f"— here's the cheapest 7 for RAG/agents [{TODAY}]"
+        )
 
-        body = "\n".join(body_lines)
+        body = "\n".join([
+            f"Been running a daily scraper on OpenRouter's API to track price changes. "
+            f"Thought the data might be useful here since people ask about this a lot.\n",
 
-        # Postear en r/LocalLLaMA (más tolerante a discusiones de precios)
+            f"**Today's cheapest models by input price ($/1M tokens):**\n",
+
+            table,
+
+            context_block,
+
+            f"\n**Methodology:** prices pulled directly from OpenRouter's public `/api/v1/models` endpoint, "
+            f"no affiliation. Context window and pricing update in real-time so these numbers are from today.",
+
+            f"\n**Question for the community:** at what $/1M threshold does it make sense to "
+            f"switch from a frontier model to one of these cheaper options for production RAG? "
+            f"I've been testing {name_a} for summarization and the quality is surprisingly solid.",
+
+            f"\n---",
+            f"*Data source: I maintain a price tracker — link in my profile if anyone wants the full table.*",
+        ])
+
         subreddit = reddit.subreddit("LocalLLaMA")
         submission = subreddit.submit(title=title, selftext=body)
         print(f"✅ Reddit: post publicado → https://reddit.com{submission.permalink}")
@@ -341,7 +411,7 @@ def main():
 
     # Reddit
     print("[2/3] Publicando en Reddit...")
-    results["reddit"] = post_reddit(cheapest, expensive, compare_url)
+    results["reddit"] = post_reddit(models, cheapest, expensive, compare_url)
 
     # LinkedIn
     print("[3/3] Publicando en LinkedIn...")
