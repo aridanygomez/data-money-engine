@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-27T19:30:42.167994",
+  "generated_at": "2026-02-27T20:23:12.361748",
   "date": "2026-02-27",
   "stats": {
     "total_models": 344,
@@ -190,7 +190,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/liquid/lfm2-8b-a1b",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore LiquidAI's LFM2-8B-A1B API pricing for Large Language Model inference. Understand your costs with our transparent, pay-as-you-go model. Input tokens are priced at $0.01000 per 1 million tokens, while output tokens are $0.02000 per 1 million tokens, resulting in a total cost of $0.0300 per million tokens. LFM2-8B-A1B supports a context length of 32,768 tokens. For example, processing 100 million tokens monthly (50M input, 50M output) would cost approximately $1.50. Compare LiquidAI's competitive pricing and generous context window against other LLM API providers and see how it can optimize your machine learning budget."
     },
     {
       "id": "liquid/lfm-2.2-6b",
@@ -204,7 +204,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/liquid/lfm-2.2-6b",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore LiquidAI's LFM2-2.6B API pricing for cost-effective large language model inference. Ideal for ML engineers evaluating LLM API options, LFM2-2.6B offers a 32,768 token context window with competitive rates. Input tokens are priced at $0.01000 per 1 million tokens, while output tokens cost $0.02000 per 1 million tokens, resulting in a total cost of $0.0300 per 1 million tokens processed. For instance, processing 100 million tokens monthly would cost just $3.00, making LiquidAI's LFM2-2.6B a compelling choice for budget-conscious NLP projects. Compare LiquidAI's LFM2-2.6B API pricing to other providers and see how it can optimize your LLM costs. Powered by liquid."
     },
     {
       "id": "meta-llama/llama-3.2-3b-instruct",
@@ -218,7 +218,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/meta-llama/llama-3.2-3b-instruct",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore the pricing for Meta's Llama 3.2 3B Instruct API. This page details the cost structure for machine learning engineers evaluating large language models. The API is priced at $0.02000 per 1 million input tokens and $0.02000 per 1 million output tokens, totaling $0.0400 per million tokens. With a context window of 131,072 tokens, Llama 3.2 3B Instruct offers a substantial processing capacity. For example, processing 50 million tokens daily would cost approximately $60 per month. Analyze this cost-effective solution from Meta to optimize your LLM application development."
     },
     {
       "id": "google/gemma-3n-e4b-it",
@@ -232,7 +232,7 @@
       "is_free": false,
       "openrouter_url": "https://openrouter.ai/google/gemma-3n-e4b-it",
       "fetched_at": "2026-02-27",
-      "description": ""
+      "description": "Explore Google's Gemma 3n 4B API pricing and evaluate its cost-effectiveness for your large language model applications. Understand the input cost of $0.02000 per 1 million tokens, the output cost of $0.04000 per 1 million tokens, and a total cost of $0.0600 per 1 million tokens. With a context window of 32,768 tokens, Gemma 3n 4B offers a balance between context length and affordability. For instance, an application processing 50 million tokens per day would cost approximately $90 per month. Compare Gemma 3n 4B against other LLM APIs and determine if Google's offering fits your budget and performance needs."
     },
     {
       "id": "mistralai/mistral-nemo",
@@ -416,7 +416,7 @@
       "is_free": true,
       "openrouter_url": "https://openrouter.ai/upstage/solar-pro-3:free",
       "fetched_at": "2026-02-27",
-      "description": "Explore Upstage's Solar Pro 3 API pricing: it's completely free! Ideal for ML engineers seeking cost-effective LLM solutions, Solar Pro 3 offers a generous 128,000 token context window with zero cost for both input and output tokens ($0.00000/1M tokens each). This means you can process substantial amounts of data without incurring any expenses. For example, if you process 100 million input tokens and 50 million output tokens in a month, your total cost would still be $0.00. Experience powerful language model capabilities without budget constraints. Discover the Upstage advantage today!"
+      "description": "Looking for a powerful, free LLM API? Upstage's Solar Pro 3 offers completely free access with no input or output costs. Specifically, both input and output are priced at $0.00000 per 1 million tokens. This zero-cost API boasts a generous 128,000 token context window, making it ideal for complex tasks. If you process 100 million input tokens and 50 million output tokens monthly, your cost with Upstage Solar Pro 3 remains $0.00. Perfect for ML engineers experimenting with large language models or seeking a cost-effective solution, Upstage provides a compelling alternative to paid API services. Explore the capabilities of Solar Pro 3 and start building today without worrying about usage fees."
     },
     {
       "id": "liquid/lfm-2.5-1.2b-thinking:free",
@@ -430,7 +430,7 @@
       "is_free": true,
       "openrouter_url": "https://openrouter.ai/liquid/lfm-2.5-1.2b-thinking:free",
       "fetched_at": "2026-02-27",
-      "description": "Explore LiquidAI's LFM2.5-1.2B-Thinking API pricing: a completely free large language model (LLM) option for ML engineers. With a generous 32,768 token context window, enjoy $0.00000 cost for both input and output tokens. Powered by Liquid, this API offers a compelling solution for testing and development without budget constraints. For example, processing 10 million tokens of input and generating 5 million tokens of output monthly would cost you exactly $0. Compare LFM2.5-1.2B-Thinking's performance and capabilities with other LLM APIs while benefiting from zero-cost access. Start building with LiquidAI today."
+      "description": "Explore LiquidAI's LFM2.5-1.2B-Thinking API with completely free pricing. Ideal for ML engineers seeking cost-effective Large Language Model solutions, this API offers a generous 32,768 token context window and is provided by liquid. Benefit from $0.00000 input and $0.00000 output cost per 1M tokens, making it an exceptional choice for developers on a budget. For example, processing 100 million tokens monthly would cost absolutely nothing. Test and integrate LFM2.5-1.2B-Thinking into your projects without worrying about API expenses. Perfect for experimentation and production workloads."
     },
     {
       "id": "liquid/lfm-2.5-1.2b-instruct:free",
@@ -444,7 +444,7 @@
       "is_free": true,
       "openrouter_url": "https://openrouter.ai/liquid/lfm-2.5-1.2b-instruct:free",
       "fetched_at": "2026-02-27",
-      "description": "Looking for a powerful and cost-effective LLM API? Explore LiquidAI's LFM2.5-1.2B-Instruct, now available completely free of charge! This API offers a generous 32,768 token context window with zero cost for both input and output tokens ($0.00000/1M tokens). Perfect for ML engineers and developers seeking to experiment and build without breaking the bank. For example, processing 10 million tokens of both input and output per month would still cost you $0.00. Explore the possibilities with LiquidAI's free LLM API today and experience high-quality language modeling without any financial barriers. Get started now and see the power of free!"
+      "description": "Explore the LiquidAI LFM2.5-1.2B-Instruct API and its completely free pricing model. Ideal for machine learning engineers seeking cost-effective LLM solutions, this API offers a 32,768 token context window with both input and output priced at $0.00000 per million tokens. Provided by liquid, this allows for extensive experimentation and development without incurring any costs. For example, processing 100 million tokens per month would still cost you $0.00. Leverage a powerful language model for your projects without budget constraints. Discover the capabilities of LiquidAI's LFM2.5-1.2B-Instruct API today."
     },
     {
       "id": "nvidia/nemotron-3-nano-30b-a3b:free",
@@ -458,7 +458,7 @@
       "is_free": true,
       "openrouter_url": "https://openrouter.ai/nvidia/nemotron-3-nano-30b-a3b:free",
       "fetched_at": "2026-02-27",
-      "description": "Explore NVIDIA's Nemotron 3 Nano 30B A3B API: a powerful, completely free large language model solution. Ideal for ML engineers seeking cost-effective LLMs, this API offers a generous 256,000 token context window. With input and output priced at $0.00000 per million tokens, your total cost is truly $0. Perfect for experimenting, prototyping, and deploying AI applications without budget constraints. For example, processing 100 million tokens of input and generating 50 million tokens of output monthly would cost you absolutely nothing. Discover unparalleled value with NVIDIA's Nemotron 3 Nano 30B A3B."
+      "description": "Explore the power of NVIDIA's Nemotron 3 Nano 30B A3B with our completely free API. Ideal for ML engineers evaluating LLM options, this API boasts a 256,000 token context window and comes with absolutely no cost: $0.00000 per million input tokens and $0.00000 per million output tokens. That's right - it's completely free. Test and integrate Nemotron 3 Nano 30B A3B without budget constraints. For example, processing 100 million tokens monthly incurs $0.00, making it a perfect solution for experimentation and cost-sensitive projects. Discover the capabilities of NVIDIA's LLM without financial commitment."
     },
     {
       "id": "arcee-ai/trinity-mini:free",
@@ -472,7 +472,7 @@
       "is_free": true,
       "openrouter_url": "https://openrouter.ai/arcee-ai/trinity-mini:free",
       "fetched_at": "2026-02-27",
-      "description": "Explore the Arcee AI: Trinity Mini API, a powerful and completely free LLM solution for your machine learning projects. With a generous 131,072 token context window, this API offers significant capacity for complex tasks. Input and output are both priced at $0.00000 per million tokens, meaning it's truly zero-cost. Ideal for ML engineers comparing LLM API options, Trinity Mini provides a risk-free environment to experiment and innovate. For instance, processing 10 million input tokens and 5 million output tokens per month would still cost you absolutely nothing. Discover the capabilities of arcee-ai's Trinity Mini and unlock new possibilities without budget constraints."
+      "description": "Explore Arcee AI's Trinity Mini API, a cost-effective solution for your language model needs. With input and output pricing at $0.00000 per 1 million tokens, it's completely free to use. Leveraging a context window of 131,072 tokens, Trinity Mini, provided by arcee-ai, offers a generous playground for experimentation and development. ML engineers seeking budget-friendly LLM APIs can benefit from Trinity Mini, allowing you to process large amounts of text without incurring any costs. For example, processing 1 billion tokens for both input and output would still cost you $0. Get started today and experience the power of Arcee AI, risk-free."
     },
     {
       "id": "nvidia/nemotron-nano-12b-v2-vl:free",
@@ -486,7 +486,7 @@
       "is_free": true,
       "openrouter_url": "https://openrouter.ai/nvidia/nemotron-nano-12b-v2-vl:free",
       "fetched_at": "2026-02-27",
-      "description": "Explore the capabilities of NVIDIA's Nemotron Nano 12B 2 VL model with completely free API access. Ideal for machine learning engineers evaluating large language models, this API offers a generous 128,000 token context window at no cost. Input and output are priced at $0.00000 per 1 million tokens, making it exceptionally budget-friendly. For example, processing 10 million tokens of input and generating 5 million tokens of output monthly would cost you $0.00. Leverage NVIDIA's powerful AI technology without breaking the bank. Perfect for experimentation, prototyping, and cost-conscious development."
+      "description": "Explore the NVIDIA Nemotron Nano 12B 2 VL API and its completely free pricing model, ideal for ML engineers seeking cost-effective LLM solutions. With a context window of 128,000 tokens, this API offers impressive capabilities without breaking the bank. Both input and output tokens are priced at $0.00000 per 1 million tokens, resulting in zero cost. For example, even processing 50 million tokens per month would cost you absolutely nothing. Leverage NVIDIA's Nemotron Nano for your large language model projects and enjoy powerful performance without any financial investment. Compare it against other LLM APIs and see how much you can save."
     },
     {
       "id": "qwen/qwen3-vl-30b-a3b-thinking",
@@ -500,7 +500,7 @@
       "is_free": true,
       "openrouter_url": "https://openrouter.ai/qwen/qwen3-vl-30b-a3b-thinking",
       "fetched_at": "2026-02-27",
-      "description": "Explore Qwen3 VL 30B A3B's incredible pricing for your large language model needs. This powerful LLM, provided by Qwen, offers a massive 131,072 token context window and completely free access. That's right – both input and output are priced at $0.00000 per 1 million tokens, resulting in zero cost. Ideal for ML engineers evaluating LLM APIs, Qwen3 VL 30B A3B provides a cost-effective solution for extensive text processing. For example, even processing 100 million tokens of both input and output monthly would cost you absolutely nothing. Discover the possibilities with Qwen's free, high-performance LLM."
+      "description": "Explore the Qwen3 VL 30B A3B Thinking API: a powerful, free large language model (LLM) option for your machine learning projects. With a generous 131,072 token context window, this qwen-provided API offers unparalleled cost-effectiveness. Input and output are both priced at $0.00000 per 1 million tokens, resulting in zero cost. For example, processing 10 million tokens of input and generating 5 million tokens of output monthly would cost you $0. This makes Qwen3 VL 30B A3B Thinking API an ideal choice for ML engineers seeking high performance without budget constraints. Compare Qwen's pricing with other LLM APIs and discover the advantages of this free solution."
     }
   ]
 }

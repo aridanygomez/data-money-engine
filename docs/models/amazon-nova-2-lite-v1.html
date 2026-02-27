@@ -11,99 +11,261 @@
 <meta property="og:type" content="website" />
 <link rel="sitemap" href="/sitemap.xml" />
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Geist+Mono:wght@400;600&display=swap');
+:root {
+  --bg: #09090b; --surface: #111113; --card: #18181b; --border: #27272a;
+  --accent: #3b82f6; --accent-hover: #2563eb;
+  --success: #10b981; --success-dim: rgba(16,185,129,0.12);
+  --danger: #f87171;
+  --text: #fafafa; --text-muted: #71717a; --text-sub: #a1a1aa;
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: system-ui, -apple-system, sans-serif; background: #0f1117; color: #e2e8f0; line-height: 1.6; }
-a { color: #60a5fa; text-decoration: none; } a:hover { text-decoration: underline; }
-.nav { background: #1e2330; border-bottom: 1px solid #2d3748; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; }
-.nav-logo { font-weight: 700; font-size: 1.1rem; color: #fff; }
-.nav-links { display: flex; gap: 24px; font-size: 0.9rem; }
-.main { max-width: 1100px; margin: 0 auto; padding: 32px 16px; }
-h1 { font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 8px; }
-h2 { font-size: 1.3rem; font-weight: 700; color: #fff; margin: 32px 0 12px; }
-h3 { font-size: 1.1rem; font-weight: 600; color: #e2e8f0; margin: 16px 0 8px; }
-.subtitle { color: #94a3b8; font-size: 1rem; margin-bottom: 32px; }
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 32px; }
-.stat-card { background: #1e2330; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; text-align: center; }
-.stat-val { font-size: 1.8rem; font-weight: 800; color: #fff; }
-.stat-lbl { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
-.table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid #2d3748; margin-bottom: 32px; }
-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-thead { background: #1a1f2e; }
-th { padding: 12px 14px; text-align: left; color: #64748b; font-weight: 600; white-space: nowrap; cursor: pointer; user-select: none; }
-th:hover { color: #94a3b8; }
-td { padding: 11px 14px; border-top: 1px solid #1e2330; }
-tr:hover td { background: #1a1f2e; }
-.price-in { color: #4ade80; font-family: monospace; }
-.price-out { color: #60a5fa; font-family: monospace; }
-.price-tot { color: #fff; font-family: monospace; font-weight: 700; }
-.badge-free { background: #14532d; color: #4ade80; border: 1px solid #166534; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-.badge-cheap { background: #172554; color: #93c5fd; border: 1px solid #1e3a8a; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; }
-.badge-winner { background: #14532d; color: #4ade80; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
-.model-link { color: #e2e8f0; font-weight: 500; } .model-link:hover { color: #60a5fa; text-decoration: none; }
-.provider { color: #64748b; font-size: 0.8rem; text-transform: capitalize; }
-.ctx { color: #94a3b8; font-family: monospace; }
-.cta { background: linear-gradient(135deg, #1e3a8a 0%, #1e2330 100%); border: 1px solid #3b82f6; border-radius: 12px; padding: 28px 32px; margin: 32px 0; text-align: center; }
-.cta h2 { margin-top: 0; margin-bottom: 8px; }
-.cta p { color: #94a3b8; margin-bottom: 20px; font-size: 0.95rem; }
-.btn { display: inline-block; background: #3b82f6; color: #fff; font-weight: 700; padding: 12px 28px; border-radius: 8px; font-size: 0.95rem; }
-.btn:hover { background: #2563eb; text-decoration: none; }
-.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
-.compare-card { background: #1e2330; border: 1px solid #2d3748; border-radius: 10px; padding: 20px; }
-.compare-card.winner { border-color: #166534; background: #0f2318; }
-.price-big { font-size: 2rem; font-weight: 800; }
-.scenario-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-.scenario-table th { background: #1a1f2e; padding: 10px 14px; text-align: right; color: #64748b; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg); color: var(--text);
+  line-height: 1.6; -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+/* ── Nav ── */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(9,9,11,0.75); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem; height: 60px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 800; color: #fff; text-decoration: none;
+  letter-spacing: -0.04em; font-size: 1.05rem;
+}
+.nav-logo:hover { text-decoration: none; color: #fff; }
+.nav-links { display: flex; gap: 24px; font-size: 0.875rem; color: var(--text-sub); }
+.nav-links a { color: var(--text-sub); }
+.nav-links a:hover { color: var(--text); text-decoration: none; }
+.nav-cta {
+  font-size: 0.8rem; font-weight: 600;
+  background: var(--accent); color: #fff;
+  padding: 6px 14px; border-radius: 6px;
+}
+.nav-cta:hover { background: var(--accent-hover); text-decoration: none; color: #fff; }
+
+/* ── Hero ── */
+.hero { text-align: center; padding: 5rem 1rem 3.5rem; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3);
+  color: #93c5fd; padding: 4px 12px; border-radius: 99px; margin-bottom: 1.5rem;
+}
+.hero-badge::before { content: ''; width: 6px; height: 6px; background: #3b82f6; border-radius: 50%; }
+h1 {
+  font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800;
+  letter-spacing: -0.05em; line-height: 1.1;
+  background: linear-gradient(180deg, #fff 0%, #71717a 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+}
+h2 { font-size: 1.4rem; font-weight: 700; color: #fff; margin: 2.5rem 0 1rem; letter-spacing: -0.03em; }
+h3 { font-size: 1.05rem; font-weight: 600; color: #e4e4e7; margin: 1.25rem 0 0.5rem; }
+.subtitle { color: var(--text-muted); font-size: 1.1rem; max-width: 520px; margin: 0 auto 3rem; }
+
+/* ── Layout ── */
+.main { max-width: 1120px; margin: 0 auto; padding: 0 1.5rem 5rem; }
+
+/* ── Stat Cards ── */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2.5rem; }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.25rem 1.5rem;
+  transition: border-color 0.2s;
+}
+.stat-card:hover { border-color: #3f3f46; }
+.stat-val { font-size: 1.75rem; font-weight: 800; display: block; color: #fff; letter-spacing: -0.04em; }
+.stat-val.green { color: var(--success); }
+.stat-val.blue { color: var(--accent); }
+.stat-lbl { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+
+/* ── Table ── */
+.table-wrap {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden; margin-bottom: 2rem;
+}
+table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+thead { background: var(--surface); }
+th {
+  padding: 12px 16px; text-align: left;
+  font-size: 0.7rem; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  cursor: pointer; user-select: none; white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+th[data-col]:hover { color: var(--text-sub); }
+th[data-col]:hover::after { content: ' ↕'; }
+td { padding: 11px 16px; border-bottom: 1px solid #1c1c1f; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+.price-in { color: var(--success); font-family: 'Geist Mono', monospace; font-weight: 600; }
+.price-out { color: #60a5fa; font-family: 'Geist Mono', monospace; }
+.price-tot { color: #fff; font-family: 'Geist Mono', monospace; font-weight: 700; }
+.model-link { color: var(--text); font-weight: 500; }
+.model-link:hover { color: var(--accent); text-decoration: none; }
+.provider { color: var(--text-muted); font-size: 0.78rem; }
+.ctx { color: var(--text-sub); font-family: 'Geist Mono', monospace; font-size: 0.82rem; }
+
+/* ── Badges ── */
+.badge-free {
+  background: var(--success-dim); color: var(--success);
+  border: 1px solid rgba(16,185,129,0.3);
+  padding: 2px 8px; border-radius: 99px;
+  font-size: 0.7rem; font-weight: 700;
+}
+.badge-cheap {
+  background: rgba(59,130,246,0.1); color: #93c5fd;
+  border: 1px solid rgba(59,130,246,0.25);
+  padding: 2px 8px; border-radius: 99px;
+  font-size: 0.7rem; font-weight: 600;
+}
+.badge-winner {
+  background: var(--success-dim); color: var(--success);
+  border: 1px solid rgba(16,185,129,0.3);
+  padding: 2px 8px; border-radius: 99px;
+  font-size: 0.72rem; font-weight: 700;
+}
+
+/* ── CTA ── */
+.cta {
+  background: linear-gradient(135deg, rgba(59,130,246,0.08) 0%, transparent 100%);
+  border: 1px solid rgba(59,130,246,0.25);
+  border-radius: 16px; padding: 2.5rem 2rem;
+  text-align: center; margin: 2.5rem 0;
+}
+.cta h2 { margin-top: 0; }
+.cta p { color: var(--text-muted); margin: 0.75rem 0 1.5rem; }
+.btn {
+  display: inline-block; background: var(--accent); color: #fff;
+  font-weight: 700; padding: 10px 24px;
+  border-radius: 8px; font-size: 0.9rem;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn:hover { background: var(--accent-hover); text-decoration: none; color: #fff; transform: translateY(-1px); }
+
+/* ── Compare cards ── */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 1.5rem 0; }
+.compare-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.75rem;
+  position: relative; overflow: hidden;
+}
+.compare-card.winner {
+  border-color: rgba(16,185,129,0.4);
+  background: linear-gradient(135deg, rgba(16,185,129,0.06) 0%, var(--card) 100%);
+}
+.compare-card.winner::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--success), transparent);
+}
+.vs-divider {
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.85rem; color: var(--text-muted);
+  letter-spacing: 0.1em; margin: 0.5rem 0;
+}
+.price-big {
+  font-size: 2.2rem; font-weight: 800;
+  font-family: 'Geist Mono', monospace;
+  letter-spacing: -0.04em; color: #fff;
+}
+.price-big.cheaper { color: var(--success); }
+.scenario-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; margin-top: 1.5rem; }
+.scenario-table th {
+  background: var(--surface); padding: 10px 14px;
+  text-align: right; font-size: 0.7rem; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.06em; cursor: default;
+}
 .scenario-table th:first-child { text-align: left; }
-.scenario-table td { padding: 10px 14px; border-top: 1px solid #1e2330; text-align: right; font-family: monospace; }
-.scenario-table td:first-child { text-align: left; color: #94a3b8; }
-.win { color: #4ade80; font-weight: 700; }
-.breadcrumb { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
-.breadcrumb a { color: #64748b; } .breadcrumb a:hover { color: #94a3b8; }
-.tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
-.tag { background: #1e2330; border: 1px solid #2d3748; border-radius: 6px; padding: 4px 12px; font-size: 0.8rem; color: #94a3b8; }
-.change-up { color: #f87171; } .change-down { color: #4ade80; }
-footer { text-align: center; color: #475569; font-size: 0.82rem; padding: 40px 16px; border-top: 1px solid #1e2330; margin-top: 48px; }
-@media (max-width: 640px) { .compare-grid { grid-template-columns: 1fr; } h1 { font-size: 1.4rem; } }
+.scenario-table td {
+  padding: 10px 14px; border-top: 1px solid var(--border);
+  text-align: right; font-family: 'Geist Mono', monospace; font-size: 0.85rem;
+}
+.scenario-table td:first-child { text-align: left; color: var(--text-sub); font-family: inherit; }
+.win { color: var(--success); font-weight: 700; }
+.loss { color: var(--text-muted); }
+
+/* ── Misc ── */
+.breadcrumb { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+.breadcrumb a { color: var(--text-muted); }
+.breadcrumb a:hover { color: var(--text-sub); }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 1rem 0; }
+.tag {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 3px 10px;
+  font-size: 0.78rem; color: var(--text-muted);
+}
+.change-up { color: var(--danger); }
+.change-down { color: var(--success); }
+.desc { color: var(--text-sub); line-height: 1.7; margin: 1rem 0; }
+
+/* ── Footer ── */
+footer {
+  text-align: center; color: var(--text-muted); font-size: 0.8rem;
+  padding: 3rem 1rem; border-top: 1px solid var(--border); margin-top: 3rem;
+}
+footer a { color: var(--text-muted); }
+footer a:hover { color: var(--text-sub); }
+
+/* ── Responsive ── */
+@media (max-width: 660px) {
+  .nav { padding: 0 1rem; }
+  .compare-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+}
 </style>
 </head>
 <body>
 <nav class="nav">
-  <a class="nav-logo" href="/">⚡ LLM Pricing</a>
+  <a class="nav-logo" href="https://aridanygomez.github.io/data-money-engine/">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="#3b82f6" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    LLM Pricing
+  </a>
   <div class="nav-links">
-    <a href="/">All Models</a>
-    <a href="/compare/">Compare</a>
-    <a href="https://stormrouter.dev" target="_blank" rel="noopener">Auto-routing →</a>
+    <a href="https://aridanygomez.github.io/data-money-engine/">Models</a>
+    <a href="https://aridanygomez.github.io/data-money-engine/compare/">Compare</a>
+    <a class="nav-cta" href="https://stormrouter.dev" target="_blank" rel="noopener">Try StormRouter →</a>
   </div>
 </nav>
 <div class="main">
-<div class="breadcrumb"><a href="/">LLM Pricing</a> › <span style="text-transform:capitalize">amazon</span> › Amazon: Nova 2 Lite</div>
+<div class="breadcrumb"><a href="https://aridanygomez.github.io/data-money-engine/">LLM Pricing</a> › <span style="text-transform:capitalize">amazon</span> › Amazon: Nova 2 Lite</div>
     <h1>Amazon: Nova 2 Lite API Pricing </h1>
-    <p class="subtitle">by amazon · 1000K context window · </p>
+    <p class="subtitle">by amazon &middot; 1000K context window &middot; </p>
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-val price-in">$0.300</div><div class="stat-lbl">Input /1M tokens</div></div>
-      <div class="stat-card"><div class="stat-val price-out">$2.500</div><div class="stat-lbl">Output /1M tokens</div></div>
-      <div class="stat-card"><div class="stat-val">1000K</div><div class="stat-lbl">Context window</div></div>
+      <div class="stat-card"><span class="stat-val price-in">$0.300</span><div class="stat-lbl">Input /1M tokens</div></div>
+      <div class="stat-card"><span class="stat-val" style="color:#60a5fa">$2.500</span><div class="stat-lbl">Output /1M tokens</div></div>
+      <div class="stat-card"><span class="stat-val">1000K</span><div class="stat-lbl">Context window</div></div>
     </div>
     
     <h2>Monthly Cost Examples</h2>
-    <p style="color:#64748b;font-size:0.85rem;margin-bottom:12px">Assuming 50% input / 50% output token split</p>
+    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1rem">Assuming 50% input / 50% output token split</p>
     <div class="table-wrap"><table class="scenario-table">
       <thead><tr><th>Usage</th><th>Monthly cost</th></tr></thead>
       <tbody><tr><td>100K tokens/month</td><td class='win'>$0.14</td></tr><tr><td>1M tokens/month</td><td class='win'>$1.40</td></tr><tr><td>10M tokens/month</td><td class='win'>$14.00</td></tr><tr><td>100M tokens/month</td><td class='win'>$140.00</td></tr></tbody>
     </table></div>
-    <h2>Compare with other models</h2><a href='/compare/amazon-nova-2-lite-v1--vs--openai-gpt-4o.html' style='display:inline-block;margin:4px;padding:6px 12px;background:#1e2330;border:1px solid #2d3748;border-radius:6px;font-size:0.83rem;color:#94a3b8;'>Amazon: Nova 2 Lite vs OpenAI: GPT-4o →</a><a href='/compare/amazon-nova-2-lite-v1--vs--openai-gpt-4o-mini.html' style='display:inline-block;margin:4px;padding:6px 12px;background:#1e2330;border:1px solid #2d3748;border-radius:6px;font-size:0.83rem;color:#94a3b8;'>Amazon: Nova 2 Lite vs OpenAI: GPT-4o-mini →</a><a href='/compare/amazon-nova-2-lite-v1--vs--openai-o1.html' style='display:inline-block;margin:4px;padding:6px 12px;background:#1e2330;border:1px solid #2d3748;border-radius:6px;font-size:0.83rem;color:#94a3b8;'>Amazon: Nova 2 Lite vs OpenAI: o1 →</a>
+    <h2>Compare with other models</h2><a href='https://aridanygomez.github.io/data-money-engine/compare/amazon-nova-2-lite-v1--vs--openai-gpt-4o.html' style='display:inline-block;margin:4px;padding:6px 14px;background:var(--card);border:1px solid var(--border);border-radius:6px;font-size:0.82rem;color:var(--text-sub);'>Amazon: Nova 2 Lite vs OpenAI: GPT-4o &rarr;</a><a href='https://aridanygomez.github.io/data-money-engine/compare/amazon-nova-2-lite-v1--vs--openai-gpt-4o-mini.html' style='display:inline-block;margin:4px;padding:6px 14px;background:var(--card);border:1px solid var(--border);border-radius:6px;font-size:0.82rem;color:var(--text-sub);'>Amazon: Nova 2 Lite vs OpenAI: GPT-4o-mini &rarr;</a><a href='https://aridanygomez.github.io/data-money-engine/compare/amazon-nova-2-lite-v1--vs--openai-o1.html' style='display:inline-block;margin:4px;padding:6px 14px;background:var(--card);border:1px solid var(--border);border-radius:6px;font-size:0.82rem;color:var(--text-sub);'>Amazon: Nova 2 Lite vs OpenAI: o1 &rarr;</a>
     <div class="cta">
       <h2>Automate your model selection</h2>
       <p>StormRouter sends each request to the cheapest model that can handle it.<br>Only use Amazon: Nova 2 Lite when your quality requirements demand it.</p>
-      <a class="btn" href="https://stormrouter.dev" target="_blank" rel="noopener">Try StormRouter free →</a>
+      <a class="btn" href="https://stormrouter.dev" target="_blank" rel="noopener">Try StormRouter free &rarr;</a>
     </div>
-    <h2>Similar models</h2><a href='/models/amazon-nova-micro-v1.html' style='display:block;padding:8px 12px;background:#1e2330;border:1px solid #2d3748;border-radius:8px;margin-bottom:8px;'><span style='color:#e2e8f0;font-weight:500'>Amazon: Nova Micro 1.0</span><br><span style='color:#4ade80;font-family:monospace;font-size:0.85rem'>$0.175/1M</span></a><a href='/models/amazon-nova-lite-v1.html' style='display:block;padding:8px 12px;background:#1e2330;border:1px solid #2d3748;border-radius:8px;margin-bottom:8px;'><span style='color:#e2e8f0;font-weight:500'>Amazon: Nova Lite 1.0</span><br><span style='color:#4ade80;font-family:monospace;font-size:0.85rem'>$0.300/1M</span></a><a href='/models/qwen-qwen3-vl-8b-thinking.html' style='display:block;padding:8px 12px;background:#1e2330;border:1px solid #2d3748;border-radius:8px;margin-bottom:8px;'><span style='color:#e2e8f0;font-weight:500'>Qwen: Qwen3 VL 8B Thinking</span><br><span style='color:#4ade80;font-family:monospace;font-size:0.85rem'>$1.482/1M</span></a><a href='/models/minimax-minimax-m2-5.html' style='display:block;padding:8px 12px;background:#1e2330;border:1px solid #2d3748;border-radius:8px;margin-bottom:8px;'><span style='color:#e2e8f0;font-weight:500'>MiniMax: MiniMax M2.5</span><br><span style='color:#4ade80;font-family:monospace;font-size:0.85rem'>$1.495/1M</span></a><a href='/models/minimax-minimax-m2-her.html' style='display:block;padding:8px 12px;background:#1e2330;border:1px solid #2d3748;border-radius:8px;margin-bottom:8px;'><span style='color:#e2e8f0;font-weight:500'>MiniMax: MiniMax M2-her</span><br><span style='color:#4ade80;font-family:monospace;font-size:0.85rem'>$1.500/1M</span></a><a href='/models/deepseek-deepseek-r1-distill-llama-70b.html' style='display:block;padding:8px 12px;background:#1e2330;border:1px solid #2d3748;border-radius:8px;margin-bottom:8px;'><span style='color:#e2e8f0;font-weight:500'>DeepSeek: R1 Distill Llama 70B</span><br><span style='color:#4ade80;font-family:monospace;font-size:0.85rem'>$1.500/1M</span></a>
+    <h2>Similar models</h2><a href='https://aridanygomez.github.io/data-money-engine/models/amazon-nova-micro-v1.html' style='display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;text-decoration:none;'><span style='color:var(--text);font-weight:500'>Amazon: Nova Micro 1.0</span><span style='color:var(--success);font-family:monospace;font-size:0.85rem;font-weight:600'>$0.175/1M</span></a><a href='https://aridanygomez.github.io/data-money-engine/models/amazon-nova-lite-v1.html' style='display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;text-decoration:none;'><span style='color:var(--text);font-weight:500'>Amazon: Nova Lite 1.0</span><span style='color:var(--success);font-family:monospace;font-size:0.85rem;font-weight:600'>$0.300/1M</span></a><a href='https://aridanygomez.github.io/data-money-engine/models/qwen-qwen3-vl-8b-thinking.html' style='display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;text-decoration:none;'><span style='color:var(--text);font-weight:500'>Qwen: Qwen3 VL 8B Thinking</span><span style='color:var(--success);font-family:monospace;font-size:0.85rem;font-weight:600'>$1.482/1M</span></a><a href='https://aridanygomez.github.io/data-money-engine/models/minimax-minimax-m2-5.html' style='display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;text-decoration:none;'><span style='color:var(--text);font-weight:500'>MiniMax: MiniMax M2.5</span><span style='color:var(--success);font-family:monospace;font-size:0.85rem;font-weight:600'>$1.495/1M</span></a><a href='https://aridanygomez.github.io/data-money-engine/models/minimax-minimax-m2-her.html' style='display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;text-decoration:none;'><span style='color:var(--text);font-weight:500'>MiniMax: MiniMax M2-her</span><span style='color:var(--success);font-family:monospace;font-size:0.85rem;font-weight:600'>$1.500/1M</span></a><a href='https://aridanygomez.github.io/data-money-engine/models/deepseek-deepseek-r1-distill-llama-70b.html' style='display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;text-decoration:none;'><span style='color:var(--text);font-weight:500'>DeepSeek: R1 Distill Llama 70B</span><span style='color:var(--success);font-family:monospace;font-size:0.85rem;font-weight:600'>$1.500/1M</span></a>
 </div>
 <footer>
-  <p>LLM Pricing — Real-time API cost comparison for ML engineers &amp; developers</p>
-  <p style="margin-top:6px">Data from <a href="https://openrouter.ai">OpenRouter</a> · Updated daily · 
-  <a href="https://stormrouter.dev">StormRouter</a> for automatic cost routing</p>
-  <p style="margin-top:6px">Last updated: 2026-02-27</p>
+  <p style="margin-bottom:6px">LLM Pricing — Real-time API cost comparison for ML engineers &amp; developers</p>
+  <p>Data from <a href="https://openrouter.ai">OpenRouter</a> · Updated daily ·
+  Route automatically with <a href="https://stormrouter.dev">StormRouter</a></p>
+  <p style="margin-top:8px;opacity:.5">Last updated: 2026-02-27</p>
 </footer>
 
 <script>

@@ -14,6 +14,7 @@ Variables de entorno requeridas (GitHub Secrets):
 
 import os
 import sys
+import re
 import json
 import time
 import requests
@@ -23,7 +24,6 @@ from pathlib import Path
 # Forzar UTF-8 en Windows (arregla emojis en consola cp1252)
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-import re
 
 # ─── Paths ───────────────────────────────────────────────────────────────────
 
@@ -59,60 +59,222 @@ SITE_NAME = "LLM Pricing — Real-Time API Cost Comparison"
 
 # ─── HTML Templates ───────────────────────────────────────────────────────────
 
+# Logo SVG vectorial (inline, no depende de red)
+_LOGO_SVG = '<svg viewBox="0 0 24 24" width="22" height="22" fill="#3b82f6" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>'
+
 CSS = """
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Geist+Mono:wght@400;600&display=swap');
+:root {
+  --bg: #09090b; --surface: #111113; --card: #18181b; --border: #27272a;
+  --accent: #3b82f6; --accent-hover: #2563eb;
+  --success: #10b981; --success-dim: rgba(16,185,129,0.12);
+  --danger: #f87171;
+  --text: #fafafa; --text-muted: #71717a; --text-sub: #a1a1aa;
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: system-ui, -apple-system, sans-serif; background: #0f1117; color: #e2e8f0; line-height: 1.6; }
-a { color: #60a5fa; text-decoration: none; } a:hover { text-decoration: underline; }
-.nav { background: #1e2330; border-bottom: 1px solid #2d3748; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; }
-.nav-logo { font-weight: 700; font-size: 1.1rem; color: #fff; }
-.nav-links { display: flex; gap: 24px; font-size: 0.9rem; }
-.main { max-width: 1100px; margin: 0 auto; padding: 32px 16px; }
-h1 { font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 8px; }
-h2 { font-size: 1.3rem; font-weight: 700; color: #fff; margin: 32px 0 12px; }
-h3 { font-size: 1.1rem; font-weight: 600; color: #e2e8f0; margin: 16px 0 8px; }
-.subtitle { color: #94a3b8; font-size: 1rem; margin-bottom: 32px; }
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 32px; }
-.stat-card { background: #1e2330; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; text-align: center; }
-.stat-val { font-size: 1.8rem; font-weight: 800; color: #fff; }
-.stat-lbl { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
-.table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid #2d3748; margin-bottom: 32px; }
-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-thead { background: #1a1f2e; }
-th { padding: 12px 14px; text-align: left; color: #64748b; font-weight: 600; white-space: nowrap; cursor: pointer; user-select: none; }
-th:hover { color: #94a3b8; }
-td { padding: 11px 14px; border-top: 1px solid #1e2330; }
-tr:hover td { background: #1a1f2e; }
-.price-in { color: #4ade80; font-family: monospace; }
-.price-out { color: #60a5fa; font-family: monospace; }
-.price-tot { color: #fff; font-family: monospace; font-weight: 700; }
-.badge-free { background: #14532d; color: #4ade80; border: 1px solid #166534; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-.badge-cheap { background: #172554; color: #93c5fd; border: 1px solid #1e3a8a; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; }
-.badge-winner { background: #14532d; color: #4ade80; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
-.model-link { color: #e2e8f0; font-weight: 500; } .model-link:hover { color: #60a5fa; text-decoration: none; }
-.provider { color: #64748b; font-size: 0.8rem; text-transform: capitalize; }
-.ctx { color: #94a3b8; font-family: monospace; }
-.cta { background: linear-gradient(135deg, #1e3a8a 0%, #1e2330 100%); border: 1px solid #3b82f6; border-radius: 12px; padding: 28px 32px; margin: 32px 0; text-align: center; }
-.cta h2 { margin-top: 0; margin-bottom: 8px; }
-.cta p { color: #94a3b8; margin-bottom: 20px; font-size: 0.95rem; }
-.btn { display: inline-block; background: #3b82f6; color: #fff; font-weight: 700; padding: 12px 28px; border-radius: 8px; font-size: 0.95rem; }
-.btn:hover { background: #2563eb; text-decoration: none; }
-.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
-.compare-card { background: #1e2330; border: 1px solid #2d3748; border-radius: 10px; padding: 20px; }
-.compare-card.winner { border-color: #166534; background: #0f2318; }
-.price-big { font-size: 2rem; font-weight: 800; }
-.scenario-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-.scenario-table th { background: #1a1f2e; padding: 10px 14px; text-align: right; color: #64748b; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg); color: var(--text);
+  line-height: 1.6; -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+/* ── Nav ── */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(9,9,11,0.75); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem; height: 60px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 800; color: #fff; text-decoration: none;
+  letter-spacing: -0.04em; font-size: 1.05rem;
+}
+.nav-logo:hover { text-decoration: none; color: #fff; }
+.nav-links { display: flex; gap: 24px; font-size: 0.875rem; color: var(--text-sub); }
+.nav-links a { color: var(--text-sub); }
+.nav-links a:hover { color: var(--text); text-decoration: none; }
+.nav-cta {
+  font-size: 0.8rem; font-weight: 600;
+  background: var(--accent); color: #fff;
+  padding: 6px 14px; border-radius: 6px;
+}
+.nav-cta:hover { background: var(--accent-hover); text-decoration: none; color: #fff; }
+
+/* ── Hero ── */
+.hero { text-align: center; padding: 5rem 1rem 3.5rem; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3);
+  color: #93c5fd; padding: 4px 12px; border-radius: 99px; margin-bottom: 1.5rem;
+}
+.hero-badge::before { content: ''; width: 6px; height: 6px; background: #3b82f6; border-radius: 50%; }
+h1 {
+  font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800;
+  letter-spacing: -0.05em; line-height: 1.1;
+  background: linear-gradient(180deg, #fff 0%, #71717a 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+}
+h2 { font-size: 1.4rem; font-weight: 700; color: #fff; margin: 2.5rem 0 1rem; letter-spacing: -0.03em; }
+h3 { font-size: 1.05rem; font-weight: 600; color: #e4e4e7; margin: 1.25rem 0 0.5rem; }
+.subtitle { color: var(--text-muted); font-size: 1.1rem; max-width: 520px; margin: 0 auto 3rem; }
+
+/* ── Layout ── */
+.main { max-width: 1120px; margin: 0 auto; padding: 0 1.5rem 5rem; }
+
+/* ── Stat Cards ── */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2.5rem; }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.25rem 1.5rem;
+  transition: border-color 0.2s;
+}
+.stat-card:hover { border-color: #3f3f46; }
+.stat-val { font-size: 1.75rem; font-weight: 800; display: block; color: #fff; letter-spacing: -0.04em; }
+.stat-val.green { color: var(--success); }
+.stat-val.blue { color: var(--accent); }
+.stat-lbl { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+
+/* ── Table ── */
+.table-wrap {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden; margin-bottom: 2rem;
+}
+table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+thead { background: var(--surface); }
+th {
+  padding: 12px 16px; text-align: left;
+  font-size: 0.7rem; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  cursor: pointer; user-select: none; white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+th[data-col]:hover { color: var(--text-sub); }
+th[data-col]:hover::after { content: ' ↕'; }
+td { padding: 11px 16px; border-bottom: 1px solid #1c1c1f; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+.price-in { color: var(--success); font-family: 'Geist Mono', monospace; font-weight: 600; }
+.price-out { color: #60a5fa; font-family: 'Geist Mono', monospace; }
+.price-tot { color: #fff; font-family: 'Geist Mono', monospace; font-weight: 700; }
+.model-link { color: var(--text); font-weight: 500; }
+.model-link:hover { color: var(--accent); text-decoration: none; }
+.provider { color: var(--text-muted); font-size: 0.78rem; }
+.ctx { color: var(--text-sub); font-family: 'Geist Mono', monospace; font-size: 0.82rem; }
+
+/* ── Badges ── */
+.badge-free {
+  background: var(--success-dim); color: var(--success);
+  border: 1px solid rgba(16,185,129,0.3);
+  padding: 2px 8px; border-radius: 99px;
+  font-size: 0.7rem; font-weight: 700;
+}
+.badge-cheap {
+  background: rgba(59,130,246,0.1); color: #93c5fd;
+  border: 1px solid rgba(59,130,246,0.25);
+  padding: 2px 8px; border-radius: 99px;
+  font-size: 0.7rem; font-weight: 600;
+}
+.badge-winner {
+  background: var(--success-dim); color: var(--success);
+  border: 1px solid rgba(16,185,129,0.3);
+  padding: 2px 8px; border-radius: 99px;
+  font-size: 0.72rem; font-weight: 700;
+}
+
+/* ── CTA ── */
+.cta {
+  background: linear-gradient(135deg, rgba(59,130,246,0.08) 0%, transparent 100%);
+  border: 1px solid rgba(59,130,246,0.25);
+  border-radius: 16px; padding: 2.5rem 2rem;
+  text-align: center; margin: 2.5rem 0;
+}
+.cta h2 { margin-top: 0; }
+.cta p { color: var(--text-muted); margin: 0.75rem 0 1.5rem; }
+.btn {
+  display: inline-block; background: var(--accent); color: #fff;
+  font-weight: 700; padding: 10px 24px;
+  border-radius: 8px; font-size: 0.9rem;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn:hover { background: var(--accent-hover); text-decoration: none; color: #fff; transform: translateY(-1px); }
+
+/* ── Compare cards ── */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 1.5rem 0; }
+.compare-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.75rem;
+  position: relative; overflow: hidden;
+}
+.compare-card.winner {
+  border-color: rgba(16,185,129,0.4);
+  background: linear-gradient(135deg, rgba(16,185,129,0.06) 0%, var(--card) 100%);
+}
+.compare-card.winner::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--success), transparent);
+}
+.vs-divider {
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.85rem; color: var(--text-muted);
+  letter-spacing: 0.1em; margin: 0.5rem 0;
+}
+.price-big {
+  font-size: 2.2rem; font-weight: 800;
+  font-family: 'Geist Mono', monospace;
+  letter-spacing: -0.04em; color: #fff;
+}
+.price-big.cheaper { color: var(--success); }
+.scenario-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; margin-top: 1.5rem; }
+.scenario-table th {
+  background: var(--surface); padding: 10px 14px;
+  text-align: right; font-size: 0.7rem; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.06em; cursor: default;
+}
 .scenario-table th:first-child { text-align: left; }
-.scenario-table td { padding: 10px 14px; border-top: 1px solid #1e2330; text-align: right; font-family: monospace; }
-.scenario-table td:first-child { text-align: left; color: #94a3b8; }
-.win { color: #4ade80; font-weight: 700; }
-.breadcrumb { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
-.breadcrumb a { color: #64748b; } .breadcrumb a:hover { color: #94a3b8; }
-.tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
-.tag { background: #1e2330; border: 1px solid #2d3748; border-radius: 6px; padding: 4px 12px; font-size: 0.8rem; color: #94a3b8; }
-.change-up { color: #f87171; } .change-down { color: #4ade80; }
-footer { text-align: center; color: #475569; font-size: 0.82rem; padding: 40px 16px; border-top: 1px solid #1e2330; margin-top: 48px; }
-@media (max-width: 640px) { .compare-grid { grid-template-columns: 1fr; } h1 { font-size: 1.4rem; } }
+.scenario-table td {
+  padding: 10px 14px; border-top: 1px solid var(--border);
+  text-align: right; font-family: 'Geist Mono', monospace; font-size: 0.85rem;
+}
+.scenario-table td:first-child { text-align: left; color: var(--text-sub); font-family: inherit; }
+.win { color: var(--success); font-weight: 700; }
+.loss { color: var(--text-muted); }
+
+/* ── Misc ── */
+.breadcrumb { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+.breadcrumb a { color: var(--text-muted); }
+.breadcrumb a:hover { color: var(--text-sub); }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 1rem 0; }
+.tag {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 3px 10px;
+  font-size: 0.78rem; color: var(--text-muted);
+}
+.change-up { color: var(--danger); }
+.change-down { color: var(--success); }
+.desc { color: var(--text-sub); line-height: 1.7; margin: 1rem 0; }
+
+/* ── Footer ── */
+footer {
+  text-align: center; color: var(--text-muted); font-size: 0.8rem;
+  padding: 3rem 1rem; border-top: 1px solid var(--border); margin-top: 3rem;
+}
+footer a { color: var(--text-muted); }
+footer a:hover { color: var(--text-sub); }
+
+/* ── Responsive ── */
+@media (max-width: 660px) {
+  .nav { padding: 0 1rem; }
+  .compare-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+}
 """  # noqa: E501
 
 _SORT_JS = """
@@ -156,21 +318,24 @@ def _html(title: str, body: str, desc: str = "", canonical: str = "") -> str:
 </head>
 <body>
 <nav class="nav">
-  <a class="nav-logo" href="/">⚡ LLM Pricing</a>
+  <a class="nav-logo" href="{SITE_URL}/">
+    {_LOGO_SVG}
+    LLM Pricing
+  </a>
   <div class="nav-links">
-    <a href="/">All Models</a>
-    <a href="/compare/">Compare</a>
-    <a href="{STORMROUTER_URL}" target="_blank" rel="noopener">Auto-routing →</a>
+    <a href="{SITE_URL}/">Models</a>
+    <a href="{SITE_URL}/compare/">Compare</a>
+    <a class="nav-cta" href="{STORMROUTER_URL}" target="_blank" rel="noopener">Try StormRouter →</a>
   </div>
 </nav>
 <div class="main">
 {body}
 </div>
 <footer>
-  <p>LLM Pricing — Real-time API cost comparison for ML engineers &amp; developers</p>
-  <p style="margin-top:6px">Data from <a href="https://openrouter.ai">OpenRouter</a> · Updated daily · 
-  <a href="{STORMROUTER_URL}">StormRouter</a> for automatic cost routing</p>
-  <p style="margin-top:6px">Last updated: {TODAY}</p>
+  <p style="margin-bottom:6px">LLM Pricing — Real-time API cost comparison for ML engineers &amp; developers</p>
+  <p>Data from <a href="https://openrouter.ai">OpenRouter</a> · Updated daily ·
+  Route automatically with <a href="{STORMROUTER_URL}">StormRouter</a></p>
+  <p style="margin-top:8px;opacity:.5">Last updated: {TODAY}</p>
 </footer>
 {_SORT_JS}
 </body>
@@ -619,10 +784,10 @@ def generate_index_html(models: list[dict], price_changes: list[dict], descripti
 
     stats_html = f"""
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-val">{len(models)}</div><div class="stat-lbl">Models tracked</div></div>
-      <div class="stat-card"><div class="stat-val">{len(free)}</div><div class="stat-lbl">Free APIs</div></div>
-      <div class="stat-card"><div class="stat-val" style="color:#4ade80">{_fmt(paid[0]["total_price_per_1m"]) if paid else "-"}</div><div class="stat-lbl">Cheapest paid /1M</div></div>
-      <div class="stat-card"><div class="stat-val">{len(set(m["provider"] for m in models))}</div><div class="stat-lbl">Providers</div></div>
+      <div class="stat-card"><span class="stat-val blue">{len(models)}</span><div class="stat-lbl">Models tracked</div></div>
+      <div class="stat-card"><span class="stat-val green">{len(free)}</span><div class="stat-lbl">Free APIs</div></div>
+      <div class="stat-card"><span class="stat-val green">{_fmt(paid[0]["total_price_per_1m"]) if paid else "-"}</span><div class="stat-lbl">Cheapest paid /1M</div></div>
+      <div class="stat-card"><span class="stat-val">{len(set(m["provider"] for m in models))}</span><div class="stat-lbl">Providers</div></div>
     </div>"""
 
     # Price-change banner
@@ -642,13 +807,13 @@ def generate_index_html(models: list[dict], price_changes: list[dict], descripti
         badge = '<span class="badge-free">FREE</span>' if m['is_free'] else ''
         return (
             f"<tr>"
-            f"<td data-val='{m['name']}'><a class='model-link' href='/models/{slug}.html'>{m['name']}</a><br>"
+            f"<td data-val='{m['name']}'><a class='model-link' href='{SITE_URL}/models/{slug}.html'>{m['name']}</a><br>"
             f"<span class='provider'>{m['provider']}</span></td>"
             f"<td class='price-in' data-val='{m['prompt_price_per_1m']}'>{_fmt(m['prompt_price_per_1m'])}</td>"
             f"<td class='price-out' data-val='{m['completion_price_per_1m']}'>{_fmt(m['completion_price_per_1m'])}</td>"
             f"<td class='price-tot' data-val='{m['total_price_per_1m']}'>{_fmt(m['total_price_per_1m'])} {badge}</td>"
             f"<td class='ctx' data-val='{m['context_length']}'>{m['context_length']//1000}K</td>"
-            f"<td><a href='/models/{slug}.html' style='font-size:0.82rem;color:#64748b'>Details →</a></td>"
+            f"<td><a href='{SITE_URL}/models/{slug}.html' style='font-size:0.8rem;color:var(--text-muted)'>Details &rarr;</a></td>"
             f"</tr>"
         )
 
@@ -675,15 +840,18 @@ def generate_index_html(models: list[dict], price_changes: list[dict], descripti
     <a class="btn" href="{STORMROUTER_URL}" target="_blank" rel="noopener">Try StormRouter free — 14 days →</a>
     </div>"""
 
-    body = f"""<h1>LLM API Pricing — Real-Time Cost Comparison</h1>
-    <p class="subtitle">Compare {len(models)}+ language model APIs. Find the cheapest model for your use case. Updated daily.</p>
+    body = f"""<div class="hero">
+      <div class="hero-badge">Updated {TODAY} &middot; {len(models)} models</div>
+      <h1>LLM API Pricing<br>Real-Time Cost Comparison</h1>
+      <p class="subtitle">Compare {len(models)}+ AI model APIs. Find the cheapest option for your stack. Data refreshed daily.</p>
+    </div>
     {stats_html}
     {changes_html}
     {cta}
     <h2>Most Popular Models</h2>
     {table(priority_rows)}
-    <h2>All Models — Full Comparison ({len(models)} total)</h2>
-    <p style="color:#64748b;font-size:0.85rem;margin-bottom:12px">Click any column header to sort · <a href="/compare/">See head-to-head comparisons →</a></p>
+    <h2>All Models &mdash; Full Comparison ({len(models)} total)</h2>
+    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1rem">Click any column header to sort &nbsp;&middot;&nbsp; <a href="{SITE_URL}/compare/">See head-to-head comparisons &rarr;</a></p>
     {table(all_rows)}"""
 
     html = _html(
@@ -732,9 +900,10 @@ def generate_model_pages(models: list[dict], descriptions: dict) -> int:
             abs(x["total_price_per_1m"] - m["total_price_per_1m"]) < max(m["total_price_per_1m"] * 0.5, 0.5)
         )][:6]
         similar_html = "".join(
-            f"<a href='/models/{s['slug']}.html' style='display:block;padding:8px 12px;background:#1e2330;border:1px solid #2d3748;border-radius:8px;margin-bottom:8px;'>"
-            f"<span style='color:#e2e8f0;font-weight:500'>{s['name']}</span><br>"
-            f"<span style='color:#4ade80;font-family:monospace;font-size:0.85rem'>{_fmt(s['total_price_per_1m'])}/1M</span></a>"
+            f"<a href='{SITE_URL}/models/{s['slug']}.html' style='display:flex;justify-content:space-between;align-items:center;"
+            f"padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;text-decoration:none;'>"
+            f"<span style='color:var(--text);font-weight:500'>{s['name']}</span>"
+            f"<span style='color:var(--success);font-family:monospace;font-size:0.85rem;font-weight:600'>{_fmt(s['total_price_per_1m'])}/1M</span></a>"
             for s in similar
         ) if similar else ""
 
@@ -745,19 +914,22 @@ def generate_model_pages(models: list[dict], descriptions: dict) -> int:
             if not other or other["slug"] == slug:
                 continue
             a_slug, b_slug = sorted([slug, other["slug"]])
-            comp_links += f"<a href='/compare/{a_slug}--vs--{b_slug}.html' style='display:inline-block;margin:4px;padding:6px 12px;background:#1e2330;border:1px solid #2d3748;border-radius:6px;font-size:0.83rem;color:#94a3b8;'>{m['name']} vs {other['name']} →</a>"
+            comp_links += (f"<a href='{SITE_URL}/compare/{a_slug}--vs--{b_slug}.html' "
+                            f"style='display:inline-block;margin:4px;padding:6px 14px;background:var(--card);"
+                            f"border:1px solid var(--border);border-radius:6px;font-size:0.82rem;color:var(--text-sub);'>"
+                            f"{m['name']} vs {other['name']} &rarr;</a>")
 
-        body = f"""<div class="breadcrumb"><a href="/">LLM Pricing</a> › <span style="text-transform:capitalize">{m['provider']}</span> › {m['name']}</div>
+        body = f"""<div class="breadcrumb"><a href="{SITE_URL}/">LLM Pricing</a> › <span style="text-transform:capitalize">{m['provider']}</span> › {m['name']}</div>
     <h1>{m['name']} API Pricing {free_badge}</h1>
-    <p class="subtitle">by {m['provider']} · {m['context_length']//1000}K context window · {rank_html}</p>
+    <p class="subtitle">by {m['provider']} &middot; {m['context_length']//1000}K context window &middot; {rank_html}</p>
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-val price-in">{_fmt(m['prompt_price_per_1m'])}</div><div class="stat-lbl">Input /1M tokens</div></div>
-      <div class="stat-card"><div class="stat-val price-out">{_fmt(m['completion_price_per_1m'])}</div><div class="stat-lbl">Output /1M tokens</div></div>
-      <div class="stat-card"><div class="stat-val">{m['context_length']//1000}K</div><div class="stat-lbl">Context window</div></div>
+      <div class="stat-card"><span class="stat-val price-in">{_fmt(m['prompt_price_per_1m'])}</span><div class="stat-lbl">Input /1M tokens</div></div>
+      <div class="stat-card"><span class="stat-val" style="color:#60a5fa">{_fmt(m['completion_price_per_1m'])}</span><div class="stat-lbl">Output /1M tokens</div></div>
+      <div class="stat-card"><span class="stat-val">{m['context_length']//1000}K</span><div class="stat-lbl">Context window</div></div>
     </div>
-    {f'<p style="color:#94a3b8;line-height:1.8;margin-bottom:24px">{desc}</p>' if desc else ''}
+    {f'<p class="desc">{desc}</p>' if desc else ''}
     <h2>Monthly Cost Examples</h2>
-    <p style="color:#64748b;font-size:0.85rem;margin-bottom:12px">Assuming 50% input / 50% output token split</p>
+    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1rem">Assuming 50% input / 50% output token split</p>
     <div class="table-wrap"><table class="scenario-table">
       <thead><tr><th>Usage</th><th>Monthly cost</th></tr></thead>
       <tbody>{scenarios_rows}</tbody>
@@ -766,7 +938,7 @@ def generate_model_pages(models: list[dict], descriptions: dict) -> int:
     <div class="cta">
       <h2>Automate your model selection</h2>
       <p>StormRouter sends each request to the cheapest model that can handle it.<br>Only use {m['name']} when your quality requirements demand it.</p>
-      <a class="btn" href="{STORMROUTER_URL}" target="_blank" rel="noopener">Try StormRouter free →</a>
+      <a class="btn" href="{STORMROUTER_URL}" target="_blank" rel="noopener">Try StormRouter free &rarr;</a>
     </div>
     {'<h2>Similar models</h2>' + similar_html if similar_html else ''}"""
 
@@ -815,17 +987,21 @@ def generate_comparison_pages(models: list[dict], comparisons: list[dict]) -> in
         def card(m: dict) -> str:
             is_win = m["slug"] == cheap["slug"]
             border = "winner" if is_win else ""
-            win_badge = '<span class="badge-winner">✓ CHEAPER</span><br>' if is_win else ""
+            win_badge = '<span class="badge-winner">\u2713 CHEAPER</span>' if is_win else ''
+            price_class = "price-big cheaper" if is_win else "price-big"
             return (
                 f"<div class='compare-card {border}'>"
-                f"{win_badge}"
-                f"<h3>{m['name']}</h3>"
-                f"<p class='provider' style='margin-bottom:12px'>{m['provider']}</p>"
-                f"<div>Input: <span class='price-in'>{_fmt(m['prompt_price_per_1m'])}/1M</span></div>"
-                f"<div>Output: <span class='price-out'>{_fmt(m['completion_price_per_1m'])}/1M</span></div>"
-                f"<div style='border-top:1px solid #2d3748;margin-top:8px;padding-top:8px'>Total: <span class='price-tot price-big'>{_fmt(m['total_price_per_1m'])}</span>/1M</div>"
-                f"<div style='margin-top:8px;color:#64748b;font-size:0.85rem'>Context: {m['context_length']//1000}K tokens</div>"
-                f"<a href='/models/{m['slug']}.html' style='display:block;margin-top:12px;font-size:0.82rem;color:#60a5fa'>Full pricing details →</a>"
+                f"<div style='display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem'>"
+                f"<div><h3 style='margin:0'>{m['name']}</h3><p class='provider' style='margin-top:2px'>{m['provider']}</p></div>"
+                f"{win_badge}</div>"
+                f"<div style='margin:1rem 0 0.5rem'>"
+                f"<div style='font-size:0.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px'>Total /1M tokens</div>"
+                f"<span class='{price_class}'>{_fmt(m['total_price_per_1m'])}</span></div>"
+                f"<div style='font-size:0.82rem;color:var(--text-muted);border-top:1px solid var(--border);padding-top:0.75rem;margin-top:0.75rem'>"
+                f"Input <span class='price-in'>{_fmt(m['prompt_price_per_1m'])}</span> "
+                f"&nbsp;&middot;&nbsp; Output <span class='price-out'>{_fmt(m['completion_price_per_1m'])}</span><br>"
+                f"<span style='margin-top:4px;display:inline-block'>Context: {m['context_length']//1000}K tokens</span></div>"
+                f"<a href='{SITE_URL}/models/{m['slug']}.html' style='display:block;margin-top:1rem;font-size:0.8rem;color:var(--accent)'>Full details &rarr;</a>"
                 f"</div>"
             )
 
@@ -841,7 +1017,12 @@ def generate_comparison_pages(models: list[dict], comparisons: list[dict]) -> in
             scenario_rows += f"<tr><td>{label}/month</td><td>{ca_html}</td><td>{cb_html}</td><td class='win' style='font-weight:700'>${diff:,.2f}</td></tr>"
 
         slug = comp["slug"]
-        comp_index_links += f"<a href='{slug}.html' style='display:block;padding:8px 14px;background:#1e2330;border:1px solid #2d3748;border-radius:8px;margin-bottom:6px;font-size:0.88rem;color:#e2e8f0;'>{a['name']} vs {b['name']}</a>"
+        comp_index_links += (f"<a href='{slug}.html' style='display:flex;justify-content:space-between;align-items:center;"
+                               f"padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;"
+                               f"margin-bottom:8px;font-size:0.875rem;color:var(--text);text-decoration:none;transition:border-color .15s;'>"
+                               f"<span>{a['name']} <span style='color:var(--text-muted)'>vs</span> {b['name']}</span>"
+                               f"<span style='color:var(--success);font-family:monospace;font-size:0.8rem;font-weight:600'>"
+                               f"{savings_pct:.0f}% cheaper option &rarr;</span></a>")
 
         body = f"""<div class="breadcrumb"><a href="/">LLM Pricing</a> › <a href="/compare/">Compare</a> › {a['name']} vs {b['name']}</div>
     <h1>{a['name']} vs {b['name']} — API Pricing Comparison</h1>
@@ -874,9 +1055,12 @@ def generate_comparison_pages(models: list[dict], comparisons: list[dict]) -> in
         count += 1
 
     # Write compare index
-    index_body = f"""<h1>LLM Model Comparisons</h1>
-    <p class="subtitle">{len(comparisons)} head-to-head API cost comparisons. Click any pair to see monthly cost breakdown.</p>
-    <div style="columns:2;column-gap:16px">{comp_index_links}</div>"""
+    index_body = f"""<div class="hero">
+      <div class="hero-badge">Head-to-head pricing battles</div>
+      <h1>LLM Model<br>Comparisons</h1>
+      <p class="subtitle">{len(comparisons)} head-to-head API cost comparisons. Find the cheapest model for your use case.</p>
+    </div>
+    <div>{comp_index_links}</div>"""
     (compare_dir / "index.html").write_text(
         _html("LLM API Comparisons 2026 — Head-to-Head Pricing", index_body,
               desc="Compare LLM API prices head-to-head. GPT-4o vs Claude, Gemini vs Llama, and 300+ more pairs."),
