@@ -1,23 +1,50 @@
 /**
- * LLM Pricing SaaS — Cloudflare Worker
- * ─────────────────────────────────────
- * Endpoints públicos:
- *   GET  /api/v1/models              → lista modelos (rate-limited gratis, full para paid)
- *   GET  /api/v1/models/:id          → modelo individual
- *   GET  /api/v1/cheapest?n=10       → N más baratos
- *   GET  /api/v1/history/:id         → historial de precios (solo Pro)
+ * ═══════════════════════════════════════════════════════════════════
+ *  Smart AI Proxy Gateway  ·  LLM Pricing SaaS
+ *  Cloudflare Worker
+ * ═══════════════════════════════════════════════════════════════════
  *
- * Endpoints autenticados (API key en header X-API-Key):
- *   POST /api/v1/alerts/register     → registrar webhook Slack/Discord (Starter+)
- *   GET  /api/v1/alerts              → listar mis alertas
- *   DELETE /api/v1/alerts/:model_id  → borrar alerta
+ *  PROXY (OpenAI-compatible):
+ *    POST /v1/chat/completions   → proxy al modelo más barato o elegido
+ *    GET  /v1/models             → lista de modelos disponibles
  *
- * Webhooks internos (auth via INTERNAL_SECRET header):
- *   POST /internal/sync              → bot sube precios frescos + dispara alertas
+ *  PRICING API:
+ *    GET  /api/v1/models         → todos los modelos con precios
+ *    GET  /api/v1/cheapest?n=10  → N más baratos
+ *    GET  /api/v1/history/:id    → historial de precios (Starter+)
+ *    GET  /api/v1/usage          → uso del mes (autenticado)
+ *    GET  /api/v1/latency        → latencia promedio por modelo
+ *    GET  /api/v1/keys/me        → info de mi API key
  *
- * Webhooks externos:
- *   POST /webhooks/polar             → Polar.sh subscription events
+ *  ALERTAS:
+ *    POST /api/v1/alerts/register
+ *
+ *  INTERNOS (X-Internal-Secret):
+ *    POST /internal/sync         → bot sube precios frescos
+ *    POST /internal/reinvest     → acredita 20% de ingresos Stripe al pool libre
+ *
+ *  WEBHOOKS:
+ *    POST /webhooks/stripe
+ *    POST /webhooks/polar
+ *
+ *  ENV:
+ *    OPENROUTER_API_KEY  — clave real (nunca expuesta al cliente)
+ *    INTERNAL_SECRET, STRIPE_WEBHOOK_SECRET, POLAR_WEBHOOK_SECRET
+ *    DB  — D1 binding
  */
+
+// ─── Planes ──────────────────────────────────────────────────────────────────
+
+const PLANS = {
+  free:    { monthly_tokens: 100_000,    markup: 0,    history_days: 0,  alerts: false },
+  starter: { monthly_tokens: 2_000_000,  markup: 0.30, history_days: 30, alerts: true  },
+  pro:     { monthly_tokens: 20_000_000, markup: 0.20, history_days: 90, alerts: true  },
+};
+
+const PRICING_URL        = 'https://aridanygomez.github.io/data-money-engine/pricing.html';
+const SITE_URL           = 'https://aridanygomez.github.io/data-money-engine';
+const FREE_PROXY_MONTHLY = 100_000;
+const REINVESTMENT_PCT   = 0.20;
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -39,29 +66,33 @@ export default {
     if (method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
 
     try {
+      // ── OpenAI-Compatible Proxy ───────────────────────────────────────────
+      if (path === '/v1/chat/completions' && method === 'POST')
+        return await handleChatCompletions(request, url, env, ctx);
+      if (path === '/v1/models' && method === 'GET')
+        return await handleGatewayModels(env);
+
       // ── Internal (bot → D1 sync) ──────────────────────────────────────────
-      if (path === '/internal/sync' && method === 'POST') {
+      if (path === '/internal/sync' && method === 'POST')
         return await handleInternalSync(request, env);
-      }
+      if (path === '/internal/reinvest' && method === 'POST')
+        return await handleReinvestment(request, env);
 
       // ── Polar.sh webhooks ────────────────────────────────────────────────
-      if (path === '/webhooks/polar' && method === 'POST') {
+      if (path === '/webhooks/polar' && method === 'POST')
         return await handlePolarWebhook(request, env);
-      }
 
       // ── Stripe webhooks ──────────────────────────────────────────────────
-      if (path === '/webhooks/stripe' && method === 'POST') {
+      if (path === '/webhooks/stripe' && method === 'POST')
         return await handleStripeWebhook(request, env);
-      }
 
       // ── Public API ────────────────────────────────────────────────────────
-      if (path.startsWith('/api/v1/')) {
+      if (path.startsWith('/api/v1/'))
         return await handleAPI(request, url, path, env);
-      }
 
       return json({ error: 'Not found' }, 404);
     } catch (e) {
-      console.error(e);
+      console.error(e.stack || e.message);
       return json({ error: 'Internal server error', detail: e.message }, 500);
     }
   },
@@ -146,6 +177,67 @@ async function handleAPI(request, url, path, env) {
     ).bind(webhook_url, platform, threshold_pct || 10.0, apiKey).run();
 
     return json({ success: true, message: `Alerts configured for ${platform}. You'll be notified when any model price changes ≥${threshold_pct || 10}%` });
+  }
+
+  // GET /api/v1/usage  →  uso del mes actual
+  if (path === '/api/v1/usage' && method === 'GET') {
+    if (!subscriber) return json({ error: 'API key required' }, 401);
+    const month = url.searchParams.get('month') || new Date().toISOString().slice(0, 7);
+    const { results } = await env.DB.prepare(
+      `SELECT model_id, provider,
+         SUM(prompt_tokens) as prompt_tokens,
+         SUM(completion_tokens) as completion_tokens,
+         SUM(total_tokens) as total_tokens,
+         SUM(cost_billed_usd) as cost_billed_usd,
+         COUNT(*) as requests
+       FROM usage_logs WHERE subscriber_id = ? AND month = ?
+       GROUP BY model_id, provider ORDER BY total_tokens DESC`
+    ).bind(subscriber.id, month).all();
+    const totals = results.reduce(
+      (a, r) => ({ total_tokens: a.total_tokens + r.total_tokens, cost_billed_usd: a.cost_billed_usd + r.cost_billed_usd, requests: a.requests + r.requests }),
+      { total_tokens: 0, cost_billed_usd: 0, requests: 0 }
+    );
+    const plan   = subscriber.plan || 'starter';
+    const quota  = PLANS[plan]?.monthly_tokens ?? FREE_PROXY_MONTHLY;
+    return json({
+      month, plan, quota_tokens: quota,
+      used_tokens: totals.total_tokens,
+      pct_used: Math.round(totals.total_tokens / quota * 100),
+      cost_billed_usd: +totals.cost_billed_usd.toFixed(4),
+      requests: totals.requests,
+      by_model: results,
+    });
+  }
+
+  // GET /api/v1/latency  →  latencia promedio de los últimos N horas
+  if (path === '/api/v1/latency' && method === 'GET') {
+    const hours = Math.min(parseInt(url.searchParams.get('hours') || '24'), 168);
+    const since = new Date(Date.now() - hours * 3600 * 1000).toISOString();
+    const { results } = await env.DB.prepare(
+      `SELECT model_id, provider,
+         AVG(latency_ms) as avg_latency_ms,
+         MIN(latency_ms) as min_latency_ms,
+         MAX(latency_ms) as max_latency_ms,
+         COUNT(*) as samples
+       FROM usage_logs
+       WHERE created_at > ? AND latency_ms IS NOT NULL AND latency_ms > 0
+       GROUP BY model_id, provider HAVING samples >= 3
+       ORDER BY avg_latency_ms ASC`
+    ).bind(since).all();
+    return json({ hours, since, latency: results, generated_at: new Date().toISOString() });
+  }
+
+  // GET /api/v1/keys/me
+  if (path === '/api/v1/keys/me' && method === 'GET') {
+    if (!subscriber) return json({ error: 'API key required' }, 401);
+    const plan = subscriber.plan || 'starter';
+    return json({
+      plan, active: subscriber.active === 1,
+      expires_at:       subscriber.expires_at,
+      api_key_prefix:   (subscriber.api_key || '').slice(0, 12) + '...',
+      monthly_tokens:   PLANS[plan]?.monthly_tokens ?? FREE_PROXY_MONTHLY,
+      gateway_endpoint: 'https://llm-pricing-api.aridany-91.workers.dev/v1',
+    });
   }
 
   return json({ error: 'Not found' }, 404);
@@ -461,6 +553,17 @@ async function handleStripeWebhook(request, env) {
         'UPDATE subscribers SET active = 0 WHERE stripe_customer_id = ?'
       ).bind(custId).run();
     }
+  } else if (type === 'invoice.payment_succeeded') {
+    // Reinversión automática: 20% del ingreso → pool de tokens gratuitos
+    const amountPaid = (obj?.amount_paid || 0) / 100; // centavos → USD
+    if (amountPaid > 0) {
+      // llamada interna al mismo worker
+      fetch(`https://llm-pricing-api.aridany-91.workers.dev/internal/reinvest`, {
+        method: 'POST',
+        headers: { 'X-Internal-Secret': env.INTERNAL_SECRET, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount_usd: amountPaid, source: 'stripe' }),
+      }).catch(e => console.error('Reinvest call failed:', e.message));
+    }
   }
 
   return json({ received: true });
@@ -574,3 +677,261 @@ function json(data, status = 200) {
     headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
   });
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SMART AI PROXY GATEWAY — nuevas funciones
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * POST /v1/chat/completions
+ * OpenAI-compatible proxy que enruta a OpenRouter.
+ * model aliases:  "auto" → más barato   "auto:long" → contexto ≥ 100K
+ */
+async function handleChatCompletions(request, url, env, ctx) {
+  // 1. Auth
+  const apiKey     = request.headers.get('X-API-Key')
+    || (request.headers.get('Authorization') || '').replace(/^Bearer\s+/, '');
+  const subscriber = apiKey ? await getSubscriber(env, apiKey) : null;
+  if (!apiKey) return json({ error: 'X-API-Key or Authorization Bearer required. Get a free key at ' + PRICING_URL }, 401);
+  if (!subscriber) return json({ error: 'Invalid or expired API key' }, 401);
+
+  const plan = subscriber.plan || 'starter';
+
+  // 2. Parse body
+  let body;
+  try   { body = await request.json(); }
+  catch { return json({ error: 'Invalid JSON body' }, 400); }
+
+  const { messages, stream = false } = body;
+  let modelReq = body.model || 'auto';
+  if (!messages?.length) return json({ error: '`messages` array is required' }, 400);
+
+  // 3. Resolver modelo → ID real de OpenRouter
+  const { model: resolvedModel, modelMeta } = await resolveGatewayModel(modelReq, env, plan);
+  if (!resolvedModel) {
+    return json({ error: `Model "${modelReq}" not available on your plan (${plan}). Upgrade at ${PRICING_URL}` }, 403);
+  }
+
+  // 4. Verificar cuota mensual
+  const quotaErr = await checkTokenQuota(subscriber, plan, env);
+  if (quotaErr) return json({ error: quotaErr, upgrade_url: PRICING_URL }, 429);
+
+  // 5. Construir payload para OpenRouter
+  const upstream = {
+    model:       resolvedModel,
+    messages,
+    stream,
+    temperature:  body.temperature  ?? 0.7,
+    max_tokens:   body.max_tokens   ?? 2000,
+    top_p:        body.top_p        ?? 1,
+  };
+
+  const t0 = Date.now();
+  const orResp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.OPENROUTER_API_KEY}`,
+      'Content-Type':  'application/json',
+      'HTTP-Referer':   SITE_URL,
+      'X-Title':       'LLM Pricing Gateway',
+    },
+    body: JSON.stringify(upstream),
+  });
+  const latencyMs = Date.now() - t0;
+
+  // 6. Streaming path
+  if (stream && orResp.ok) {
+    ctx.waitUntil(logProxyUsage(env, subscriber, resolvedModel, modelMeta, 0, 0, 0, 0, latencyMs, 'streaming', plan));
+    return new Response(orResp.body, {
+      status: orResp.status,
+      headers: {
+        ...CORS_HEADERS,
+        'Content-Type':     'text/event-stream',
+        'Cache-Control':    'no-cache',
+        'X-Model-Used':     resolvedModel,
+        'X-Model-Requested': modelReq,
+        'X-Gateway':        'llm-pricing-gateway',
+      },
+    });
+  }
+
+  // 7. Non-streaming: parse + billing
+  let orData;
+  try   { orData = await orResp.json(); }
+  catch { return json({ error: 'Upstream returned invalid JSON', upstream_status: orResp.status }, 502); }
+
+  if (!orResp.ok) {
+    return json({ error: orData?.error?.message || 'Upstream error', upstream_status: orResp.status }, orResp.status);
+  }
+
+  const usage       = orData.usage || {};
+  const promptT     = usage.prompt_tokens     || 0;
+  const outputT     = usage.completion_tokens || 0;
+  const totalT      = promptT + outputT;
+  const markup      = PLANS[plan]?.markup ?? 0.3;
+  const costReal    = calcCost(modelMeta, promptT, outputT);
+  const costBilled  = costReal * (1 + markup);
+
+  ctx.waitUntil(logProxyUsage(env, subscriber, resolvedModel, modelMeta, promptT, outputT, costReal, costBilled, latencyMs, 'ok', plan));
+
+  orData.gateway = {
+    model_used:      resolvedModel,
+    model_requested: modelReq,
+    cost_real_usd:   +costReal.toFixed(6),
+    cost_billed_usd: +costBilled.toFixed(6),
+    tokens_total:    totalT,
+    latency_ms:      latencyMs,
+    plan,
+  };
+
+  return new Response(JSON.stringify(orData), {
+    status: 200,
+    headers: {
+      ...CORS_HEADERS,
+      'Content-Type':      'application/json',
+      'X-Model-Used':      resolvedModel,
+      'X-Model-Requested': modelReq,
+      'X-Tokens-Used':     String(totalT),
+      'X-Cost-USD':        costBilled.toFixed(6),
+      'X-Latency-Ms':      String(latencyMs),
+      'X-Gateway':         'llm-pricing-gateway',
+    },
+  });
+}
+
+/**
+ * GET /v1/models  —  OpenAI-compatible model list
+ */
+async function handleGatewayModels(env) {
+  const { results } = await env.DB.prepare(
+    'SELECT id, name, provider, context_length, prompt_price_per_1m, completion_price_per_1m FROM models WHERE is_free = 0 ORDER BY total_price_per_1m ASC LIMIT 60'
+  ).all();
+  const data = [
+    { id: 'auto',        object: 'model', owned_by: 'gateway', description: 'Auto-routes to cheapest available model' },
+    { id: 'auto:coding', object: 'model', owned_by: 'gateway', description: 'Cheapest model with ≥16K context' },
+    { id: 'auto:long',   object: 'model', owned_by: 'gateway', description: 'Cheapest model with ≥100K context' },
+    ...results.map(m => ({
+      id: m.id, object: 'model', owned_by: m.provider,
+      meta: {
+        context_length: m.context_length,
+        price_prompt_per_1m_usd:  m.prompt_price_per_1m,
+        price_output_per_1m_usd:  m.completion_price_per_1m,
+      },
+    })),
+  ];
+  return json({ object: 'list', data });
+}
+
+/**
+ * Resuelve el model alias o ID al ID real de OpenRouter.
+ */
+async function resolveGatewayModel(modelReq, env, plan) {
+  if (modelReq === 'auto' || !modelReq) {
+    const m = await env.DB.prepare(
+      'SELECT * FROM models WHERE is_free = 0 AND total_price_per_1m > 0 ORDER BY total_price_per_1m ASC LIMIT 1'
+    ).first();
+    return { model: m?.id, modelMeta: m };
+  }
+  if (modelReq === 'auto:coding') {
+    const m = await env.DB.prepare(
+      'SELECT * FROM models WHERE is_free = 0 AND context_length >= 16000 AND total_price_per_1m > 0 ORDER BY total_price_per_1m ASC LIMIT 1'
+    ).first();
+    return { model: m?.id, modelMeta: m };
+  }
+  if (modelReq === 'auto:long') {
+    const m = await env.DB.prepare(
+      'SELECT * FROM models WHERE context_length >= 100000 AND total_price_per_1m > 0 ORDER BY total_price_per_1m ASC LIMIT 1'
+    ).first();
+    return { model: m?.id, modelMeta: m };
+  }
+  const m = await env.DB.prepare(
+    'SELECT * FROM models WHERE id = ? OR slug = ? LIMIT 1'
+  ).bind(modelReq, modelReq).first();
+  if (!m) return { model: null, modelMeta: null };
+  // Free only gets cheapest
+  if (plan === 'free') {
+    const cheapest = await env.DB.prepare(
+      'SELECT id FROM models WHERE is_free = 0 AND total_price_per_1m > 0 ORDER BY total_price_per_1m ASC LIMIT 1'
+    ).first();
+    if (cheapest?.id !== m.id) return { model: null, modelMeta: null };
+  }
+  return { model: m.id, modelMeta: m };
+}
+
+/**
+ * Verifica que el subscriber no haya superado su cuota mensual.
+ */
+async function checkTokenQuota(subscriber, plan, env) {
+  const limit = PLANS[plan]?.monthly_tokens ?? FREE_PROXY_MONTHLY;
+  if (plan === 'pro') return null; // Pro goes metered, never blocked
+  const month = new Date().toISOString().slice(0, 7);
+  const row = await env.DB.prepare(
+    'SELECT COALESCE(SUM(total_tokens), 0) as used FROM usage_logs WHERE subscriber_id = ? AND month = ?'
+  ).bind(subscriber.id, month).first();
+  const used = row?.used || 0;
+  if (used >= limit) {
+    const mM = Math.round(limit / 1_000_000);
+    return `Monthly token quota exhausted (${used.toLocaleString()}/${mM}M tokens). Upgrade at ${PRICING_URL} or wait until next month.`;
+  }
+  return null;
+}
+
+function calcCost(modelMeta, promptT, outputT) {
+  if (!modelMeta) return 0;
+  const pIn  = (modelMeta.prompt_price_per_1m     || 0) / 1_000_000;
+  const pOut = (modelMeta.completion_price_per_1m || 0) / 1_000_000;
+  return pIn * promptT + pOut * outputT;
+}
+
+async function logProxyUsage(env, subscriber, model, modelMeta, promptT, outputT, costReal, costBilled, latencyMs, status, plan) {
+  if (!subscriber) return;
+  const month = new Date().toISOString().slice(0, 7);
+  try {
+    await env.DB.prepare(`
+      INSERT INTO usage_logs
+        (subscriber_id, model_id, provider, prompt_tokens, completion_tokens, total_tokens,
+         cost_real_usd, cost_billed_usd, latency_ms, month, status, plan, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      subscriber.id,
+      model,
+      modelMeta?.provider || '',
+      promptT, outputT, promptT + outputT,
+      +costReal.toFixed(8),
+      +costBilled.toFixed(8),
+      latencyMs,
+      month,
+      status,
+      plan,
+      new Date().toISOString(),
+    ).run();
+  } catch (e) {
+    console.error('Usage log error:', e.message);
+  }
+}
+
+/**
+ * POST /internal/reinvest
+ * Recibe un importe de pago Stripe y añade el 20% como créditos al pool libre.
+ */
+async function handleReinvestment(request, env) {
+  if (request.headers.get('X-Internal-Secret') !== env.INTERNAL_SECRET)
+    return json({ error: 'Unauthorized' }, 401);
+  const { amount_usd, source } = await request.json();
+  const credits_usd = +(amount_usd * REINVESTMENT_PCT).toFixed(4);
+  // ~$0.10/1M tokens en el modelo más barato
+  const tokens_added = Math.round(credits_usd / 0.10 * 1_000_000);
+  try {
+    await env.DB.prepare(
+      `INSERT INTO global_config (key, value) VALUES ('free_pool_tokens', ?)
+       ON CONFLICT(key) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + ? AS TEXT)`
+    ).bind(String(tokens_added), tokens_added).run();
+    await env.DB.prepare(
+      'INSERT INTO reinvestment_log (amount_received_usd, credits_added_usd, tokens_added, source, created_at) VALUES (?, ?, ?, ?, ?)'
+    ).bind(amount_usd, credits_usd, tokens_added, source || 'stripe', new Date().toISOString()).run();
+  } catch (e) {
+    console.error('Reinvestment log error:', e.message);
+  }
+  return json({ success: true, amount_usd, credits_usd, tokens_added, pct: REINVESTMENT_PCT });
+}
+

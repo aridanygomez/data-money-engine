@@ -473,6 +473,7 @@ def _html(title: str, body: str, desc: str = "", canonical: str = "") -> str:
     <a href="{SITE_URL}/compare/">Compare</a>
     <a href="{SITE_URL}/for/">Use Cases</a>
     <a href="{SITE_URL}/providers/">Providers</a>
+    <a href="{SITE_URL}/perf/">Guides</a>
     <a href="{SITE_URL}/pricing.html" style="color:#a78bfa">Get Alerts</a>
     <a class="nav-cta" href="{STORMROUTER_URL}" target="_blank" rel="noopener">Try StormRouter →</a>
   </div>
@@ -1016,9 +1017,10 @@ def main():
     pages_compare = generate_comparison_pages(models, comparisons)
     pages_niches  = generate_niche_pages(models, descriptions)
     pages_providers = generate_provider_pages(models, descriptions)
+    pages_perf    = generate_performance_pages(models)
     generate_sitemap(models, comparisons)
     generate_static_assets(len(models), len(comparisons))
-    total_pages = pages_index + pages_models + pages_compare + pages_niches + pages_providers
+    total_pages = pages_index + pages_models + pages_compare + pages_niches + pages_providers + pages_perf
     log_entry["html_pages_generated"] = total_pages
 
     # Log final
@@ -1597,6 +1599,258 @@ def generate_provider_pages(models: list[dict], descriptions: dict) -> int:
     return count
 
 
+# ─ SEO Gen-2: páginas de performance / latencia ──────────────────────────────
+
+PERFORMANCE_SEGMENTS = [
+    {
+        "slug":         "cheapest-100k-context",
+        "title":        "Cheapest LLM APIs with 100K+ Context Window (2026)",
+        "h1":           "Cheapest Models with 100K+ Context",
+        "desc":         "Top AI models offering at least 100,000-token context windows ranked by price. Best value for long-document processing, RAG and agent pipelines.",
+        "badge":        "Long Context",
+        "filter_fn":    lambda m: (m.get("context_length") or 0) >= 100_000,
+        "sort_key":     "total_price_per_1m",
+        "insight":      "Long-context models let you process entire codebases or books in a single call. Price delta vs short-context models has shrunk 60% since 2024.",
+    },
+    {
+        "slug":         "best-value-coding-llm",
+        "title":        "Best Value LLM APIs for Coding in 2026",
+        "h1":           "Best-Value Models for Coding & Code Generation",
+        "desc":         "Cheapest AI APIs for code completion, refactoring and review with at least 16K context — ranked by price-per-million tokens.",
+        "badge":        "Coding",
+        "filter_fn":    lambda m: (m.get("context_length") or 0) >= 16_000 and not m.get("is_free"),
+        "sort_key":     "total_price_per_1m",
+        "insight":      "Coding tasks need enough context for a full file. Models with 32K+ context cost only ~10% more than 8K equivalents on average.",
+    },
+    {
+        "slug":         "free-llm-apis-unlimited",
+        "title":        "Free LLM APIs Available Right Now (2026)",
+        "h1":           "Free LLM APIs — Zero Cost Models",
+        "desc":         "AI models currently available for free via API. Updated daily. Great for prototyping, experiments and low-volume production.",
+        "badge":        "Free Tier",
+        "filter_fn":    lambda m: m.get("is_free") or m.get("total_price_per_1m", 1) == 0,
+        "sort_key":     "context_length",
+        "insight":      "Free models are typically open-weight models hosted by providers for promotional purposes. Rate limits apply — use a gateway to stay within limits.",
+    },
+    {
+        "slug":         "sub-dollar-million-tokens",
+        "title":        "Under $1 per Million Tokens — Cheapest LLM APIs 2026",
+        "h1":           "LLM APIs Under $1 / Million Tokens",
+        "desc":         "All AI model APIs priced below $1 per million tokens. Sorted by price. Stop over-spending on GPT-4 for tasks any of these can handle.",
+        "badge":        "Ultra-cheap",
+        "filter_fn":    lambda m: 0 < (m.get("total_price_per_1m") or 0) < 1.0,
+        "sort_key":     "total_price_per_1m",
+        "insight":      "The $1/M threshold is the new 'good enough' benchmark. Most classification, summarisation and extraction tasks don't need anything more expensive.",
+    },
+    {
+        "slug":         "large-context-low-cost",
+        "title":        "200K+ Context LLM APIs — Cheapest Options 2026",
+        "h1":           "Models with 200K+ Context Window",
+        "desc":         "AI APIs with context windows of 200,000 tokens or more. Compare Claude, Gemini, DeepSeek and other giants by price.",
+        "badge":        "200K Context",
+        "filter_fn":    lambda m: (m.get("context_length") or 0) >= 200_000,
+        "sort_key":     "total_price_per_1m",
+        "insight":      "200K+ context models can hold an entire novel, codebase or legal contract. Gemini and DeepSeek now offer this cheaply.",
+    },
+    {
+        "slug":         "cheapest-openai-alternatives",
+        "title":        "Cheapest OpenAI API Alternatives — Save 90% in 2026",
+        "h1":           "Cheapest OpenAI API Alternatives",
+        "desc":         "Drop-in replacements for OpenAI APIs that cost up to 90% less. Compatible endpoints, same JSON format — no code changes required.",
+        "badge":        "OpenAI Alternative",
+        "filter_fn":    lambda m: not m.get("is_free") and (m.get("provider") or "").lower() not in ("openai",) and (m.get("total_price_per_1m") or 0) > 0,
+        "sort_key":     "total_price_per_1m",
+        "insight":      "Most apps don't need GPT-4. Switching to a cheaper compatible model is the single fastest way to cut AI costs — with no code changes if you use the OpenAI SDK.",
+    },
+]
+
+
+def generate_performance_pages(models: list[dict]) -> int:
+    """
+    SEO Gen-2: páginas de performance/segmento.
+    Genera output/perf/<slug>.html + un índice output/perf/index.html.
+    """
+    print("[HTML perf] Generando páginas de performance SEO...")
+    perf_dir = OUTPUT_DIR / "perf"
+    perf_dir.mkdir(parents=True, exist_ok=True)
+    count = 0
+
+    paid_models = [m for m in models if not m.get("is_free") and (m.get("total_price_per_1m") or 0) > 0]
+    index_cards = ""
+
+    for seg in PERFORMANCE_SEGMENTS:
+        filtered = [m for m in models if seg["filter_fn"](m)]
+        if not filtered:
+            continue
+
+        sort_k = seg["sort_key"]
+        filtered.sort(key=lambda m: m.get(sort_k) or 0)
+        top = filtered[:12]
+
+        # ── Tabla de modelos ──────────────────────────────────────────────────
+        rows = ""
+        for rank, m in enumerate(top, 1):
+            mid   = m.get("id", "")
+            name  = m.get("name", mid)
+            prov  = m.get("provider", "")
+            ctx   = m.get("context_length") or 0
+            price = m.get("total_price_per_1m") or 0
+            free  = m.get("is_free")
+            medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(rank, f"#{rank}")
+            price_str = "Free" if free else f"${price:.4f}/1M"
+            ctx_str   = f"{ctx//1000}K" if ctx >= 1000 else str(ctx)
+            slug_m    = re.sub(r"[^a-z0-9]+", "-", mid.lower()).strip("-")
+            rows += (
+                f'<tr>'
+                f'<td style="text-align:center">{medal}</td>'
+                f'<td><a href="../{slug_m}.html" style="color:var(--accent);font-weight:600">{name}</a></td>'
+                f'<td style="color:var(--text-muted)">{prov}</td>'
+                f'<td style="color:var(--text-muted)">{ctx_str}</td>'
+                f'<td style="font-weight:700;color:{"#10b981" if free else "var(--accent)"}">{price_str}</td>'
+                f'</tr>'
+            )
+
+        table = (
+            f'<div style="overflow-x:auto;margin:24px 0">'
+            f'<table style="width:100%;border-collapse:collapse">'
+            f'<thead><tr style="border-bottom:2px solid var(--border)">'
+            f'<th style="padding:10px 8px;text-align:center;color:var(--text-muted);font-size:0.8rem">#</th>'
+            f'<th style="padding:10px 8px;text-align:left;color:var(--text-muted);font-size:0.8rem">MODEL</th>'
+            f'<th style="padding:10px 8px;text-align:left;color:var(--text-muted);font-size:0.8rem">PROVIDER</th>'
+            f'<th style="padding:10px 8px;text-align:left;color:var(--text-muted);font-size:0.8rem">CONTEXT</th>'
+            f'<th style="padding:10px 8px;text-align:left;color:var(--text-muted);font-size:0.8rem">PRICE/1M</th>'
+            f'</tr></thead>'
+            f'<tbody>{rows}</tbody>'
+            f'</table></div>'
+        )
+
+        # ── Savings insight widget ────────────────────────────────────────────
+        if paid_models and top:
+            gpt4 = next((m for m in paid_models if "gpt-4o" in (m.get("id") or "").lower()), None)
+            if gpt4 and not top[0].get("is_free"):
+                saving_pct = max(0, round((1 - (top[0]["total_price_per_1m"] / gpt4["total_price_per_1m"])) * 100))
+                insight_widget = (
+                    f'<div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);'
+                    f'border-radius:12px;padding:16px 20px;margin:24px 0">'
+                    f'<span style="font-size:1.4rem">💡</span> '
+                    f'<strong style="color:#10b981">{saving_pct}% cheaper than GPT-4o</strong> — '
+                    f'{top[0].get("name","this model")} costs ${top[0]["total_price_per_1m"]:.4f}/1M vs '
+                    f'${gpt4["total_price_per_1m"]:.4f}/1M for GPT-4o. '
+                    f'On 100M tokens/year that\'s <strong>${(gpt4["total_price_per_1m"]-top[0]["total_price_per_1m"])*100:.0f} saved</strong>.'
+                    f'</div>'
+                )
+            else:
+                insight_widget = ""
+        else:
+            insight_widget = ""
+
+        # ── Insight textual ───────────────────────────────────────────────────
+        insight_block = (
+            f'<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;'
+            f'padding:16px 20px;margin:24px 0;font-size:0.95rem;line-height:1.6;color:var(--text-muted)">'
+            f'<strong style="color:var(--text)">Market insight</strong> — {seg["insight"]}'
+            f'</div>'
+        )
+
+        # ── CTA Gateway ───────────────────────────────────────────────────────
+        cta = (
+            f'<div style="background:var(--accent);border-radius:14px;padding:28px 24px;'
+            f'text-align:center;margin:32px 0">'
+            f'<h3 style="color:#fff;margin:0 0 8px">Use any of these models via one API</h3>'
+            f'<p style="color:rgba(255,255,255,0.85);margin:0 0 18px;font-size:0.95rem">'
+            f'LLM Pricing Gateway — OpenAI-compatible endpoint that auto-routes to the cheapest model.</p>'
+            f'<a href="{SITE_URL}/pricing.html" style="display:inline-block;background:#fff;color:var(--accent);'
+            f'font-weight:700;padding:12px 28px;border-radius:8px;text-decoration:none;font-size:1rem">'
+            f'Start Free — No credit card</a>'
+            f'</div>'
+        )
+
+        # ── FAQ structured data ───────────────────────────────────────────────
+        faq_ld = json.dumps({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": f"What is the cheapest LLM API for {seg['badge']} tasks?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": f"As of 2026, {top[0].get('name', top[0].get('id', 'an open-weight model'))} from {top[0].get('provider', 'a major provider')} is the cheapest option at ${top[0].get('total_price_per_1m', 0):.4f} per million tokens."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "How often are prices updated?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Prices are fetched from OpenRouter daily at 06:00 UTC and updated automatically. Check back daily for the latest rates."
+                    }
+                },
+            ]
+        }, ensure_ascii=False)
+
+        body = (
+            f'<div class="hero">'
+            f'<div class="hero-badge">{seg["badge"]}</div>'
+            f'<h1>{seg["h1"]}</h1>'
+            f'<p class="subtitle">{seg["desc"]}</p>'
+            f'<p style="color:var(--text-muted);font-size:0.85rem;margin-top:8px">🔄 Updated daily · {len(filtered)} models found</p>'
+            f'</div>'
+            f'{insight_widget}'
+            f'{table}'
+            f'{insight_block}'
+            f'<h2 style="font-size:1.3rem;margin:32px 0 16px">Why switch?</h2>'
+            f'<ul style="color:var(--text-muted);line-height:1.9;padding-left:1.2rem">'
+            f'<li>✅ Same OpenAI-compatible JSON format — no code changes</li>'
+            f'<li>✅ Route requests via our gateway for automatic cost optimisation</li>'
+            f'<li>✅ Daily price alerts via Slack or Discord when any model changes price</li>'
+            f'<li>✅ 100K free tokens/month to test before committing</li>'
+            f'</ul>'
+            f'{cta}'
+            f'<script type="application/ld+json">{faq_ld}</script>'
+        )
+
+        html = _html(
+            seg["title"], body,
+            desc=seg["desc"],
+            canonical=f"{SITE_URL}/perf/{seg['slug']}.html",
+        )
+        (perf_dir / f"{seg['slug']}.html").write_text(html, encoding="utf-8")
+
+        # ── Tarjeta para el índice ─────────────────────────────────────────────
+        top_model_name  = top[0].get("name", top[0].get("id", "")) if top else ""
+        top_model_price = f"${top[0].get('total_price_per_1m', 0):.4f}/1M" if top and not top[0].get("is_free") else "Free"
+        index_cards += (
+            f'<a href="{seg["slug"]}.html" style="display:block;background:var(--card);border:1px solid var(--border);'
+            f'border-radius:14px;padding:22px 24px;margin-bottom:14px;text-decoration:none;">'
+            f'<div style="display:flex;justify-content:space-between;align-items:flex-start">'
+            f'<div>'
+            f'<span style="background:var(--accent);color:#fff;font-size:0.72rem;font-weight:700;'
+            f'padding:3px 9px;border-radius:20px;letter-spacing:.04em">{seg["badge"].upper()}</span>'
+            f'<h3 style="font-size:1.1rem;margin:10px 0 4px;color:var(--text)">{seg["h1"]}</h3>'
+            f'<p style="color:var(--text-muted);font-size:0.88rem;margin:0">{len(filtered)} models · best: {top_model_name} at {top_model_price}</p>'
+            f'</div>'
+            f'<span style="color:var(--accent);font-size:1.2rem;margin-left:12px">→</span>'
+            f'</div></a>'
+        )
+        count += 1
+
+    # ── Índice ────────────────────────────────────────────────────────────────
+    index_body = (
+        f'<div class="hero"><div class="hero-badge">Performance Guides</div>'
+        f'<h1>LLM API Performance<br>&amp; Price Segments</h1>'
+        f'<p class="subtitle">Curated model rankings by use case, context window and price. Updated daily.</p></div>'
+        f'{index_cards}'
+    )
+    (perf_dir / "index.html").write_text(
+        _html("LLM API Performance Guides — Cheapest Models by Category 2026", index_body,
+              desc="Find the cheapest AI APIs by category: long context, coding, free tier, OpenAI alternatives and more. Updated daily."),
+        encoding="utf-8",
+    )
+    print(f"  ✅ {count} páginas de performance en output/perf/")
+    return count
+
+
 def generate_sitemap(models: list[dict], comparisons: list[dict]):
     """Genera output/sitemap.xml con clusters inteligentes por proveedor y nicho."""
     print("[HTML sitemap] Generando sitemap.xml inteligente...")
@@ -1627,7 +1881,13 @@ def generate_sitemap(models: list[dict], comparisons: list[dict]):
     # ─ Cluster 5: Compare pages (long-tail, high-intent) ─
     compare_urls = [(f"{SITE_URL}/compare/{c['slug']}.html", "0.60") for c in comparisons]
 
-    all_urls = core + niche_urls + provider_urls + model_urls + compare_urls
+    # ─ Cluster 6: Performance guide pages (SEO gen-2) ─
+    perf_urls = [
+        (f"{SITE_URL}/perf/", "0.80"),
+        *[(f"{SITE_URL}/perf/{seg['slug']}.html", "0.78") for seg in PERFORMANCE_SEGMENTS],
+    ]
+
+    all_urls = core + niche_urls + provider_urls + perf_urls + model_urls + compare_urls
 
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -1635,7 +1895,7 @@ def generate_sitemap(models: list[dict], comparisons: list[dict]):
         xml += f"  <url><loc>{url}</loc><lastmod>{TODAY}</lastmod><priority>{priority}</priority></url>\n"
     xml += "</urlset>"
     (OUTPUT_DIR / "sitemap.xml").write_text(xml, encoding="utf-8")
-    print(f"  ✅ sitemap.xml ({len(all_urls)} URLs en 5 clusters)")
+    print(f"  ✅ sitemap.xml ({len(all_urls)} URLs en 6 clusters — perf: {len(perf_urls)})")
 
 
 def _save_log(entry: dict):
