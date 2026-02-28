@@ -2,14 +2,27 @@ name: Ejecutor Autonomo de Contenido
 
 on:
   schedule:
-    - cron: '0 6 * * *'  # 06:00 UTC = 07:00 CET (cada mañana)
-  workflow_dispatch:      # Permite ejecutarlo a mano desde GitHub
+    - cron: '0 6 * * *'   # 06:00 UTC — generación de páginas + Twitter
+    - cron: '0 14 * * *'  # 14:00 UTC — Reddit agent (pico USA East)
+    - cron: '0 20 * * *'  # 20:00 UTC — Reddit agent (pico USA West)
+  workflow_dispatch:
+    inputs:
+      run_reddit:
+        description: 'Ejecutar Reddit agent manualmente'
+        required: false
+        default: 'false'
 
 jobs:
+  # ─────────────────────────────────────────────────────────────────────────
+  # JOB 1: Generación de contenido + Twitter  (solo a las 06:00 UTC)
+  # ─────────────────────────────────────────────────────────────────────────
   build:
     runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' && github.event.inputs.run_reddit != 'true' ||
+      github.event.schedule == '0 6 * * *'
     permissions:
-      contents: write   # necesario para git push
+      contents: write
 
     steps:
       - name: Checkout del codigo
@@ -56,5 +69,52 @@ jobs:
           git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/aridanygomez/data-money-engine.git
           git add data/ docs/
           git commit -m "Auto: $(date +'%Y-%m-%d') — $(python -c "import json,pathlib; d=json.loads(pathlib.Path('data/models.json').read_text()) if pathlib.Path('data/models.json').exists() else []; print(f'{len(d)} models')" 2>/dev/null || echo 'data updated')" || exit 0
+          git push
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # JOB 2: Reddit Growth Agent  (14:00 y 20:00 UTC — pico de tráfico USA)
+  # ─────────────────────────────────────────────────────────────────────────
+  reddit_growth:
+    runs-on: ubuntu-latest
+    if: |
+      github.event.schedule == '0 14 * * *' ||
+      github.event.schedule == '0 20 * * *' ||
+      github.event.inputs.run_reddit == 'true'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install langgraph langchain-google-genai praw requests
+
+      - name: Ejecutar Reddit Growth Agent
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CF_WORKER_URL: ${{ secrets.CF_WORKER_URL }}
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          REDDIT_USERNAME: ${{ secrets.REDDIT_USERNAME }}
+          REDDIT_PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
+        run: python reddit_agent.py --post
+
+      - name: Guardar IDs respondidos
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name 'RedditBot'
+          git config --global user.email 'bot@github.com'
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/aridanygomez/data-money-engine.git
+          git add data/reddit_posted_ids.json
+          git commit -m "Reddit: $(date +'%Y-%m-%d %H:%M') UTC — dedup update" || exit 0
           git push
 
