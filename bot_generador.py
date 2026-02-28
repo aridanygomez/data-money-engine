@@ -57,6 +57,71 @@ STORMROUTER_URL = "https://stormrouter.dev"
 SITE_URL = "https://aridanygomez.github.io/data-money-engine"
 SITE_NAME = "LLM Pricing — Real-Time API Cost Comparison"
 
+# ─── Niches ───────────────────────────────────────────────────────────────────
+
+NICHES: dict[str, dict] = {
+    "chatbots": {
+        "label": "Chatbots & Conversational AI",
+        "slug": "chatbots",
+        "icon": "💬",
+        "desc": "Best cost-efficient models for multi-turn conversation and virtual assistants.",
+        "long_desc": "Chatbots need low latency, consistent quality, and low cost at scale. These models offer the best balance of price and quality for conversational use cases.",
+        "filter": lambda m: m["context_length"] >= 8000 and not m["is_free"] and m["total_price_per_1m"] > 0,
+        "sort_key": lambda m: m["total_price_per_1m"],
+        "sort_label": "cheapest per 1M tokens",
+    },
+    "rag": {
+        "label": "RAG & Document Q&A",
+        "slug": "rag",
+        "icon": "📚",
+        "desc": "Models with large context windows for document retrieval and Q&A systems.",
+        "long_desc": "RAG systems need large context windows to ingest retrieved documents. These models offer maximum context per dollar, minimizing chunking complexity.",
+        "filter": lambda m: m["context_length"] >= 64000 and not m["is_free"] and m["total_price_per_1m"] > 0,
+        "sort_key": lambda m: -(m["context_length"] / max(m["total_price_per_1m"], 0.001)),
+        "sort_label": "best context-per-dollar",
+    },
+    "coding": {
+        "label": "Code Generation & Review",
+        "slug": "coding",
+        "icon": "⚙️",
+        "desc": "Top models for code completion, debugging, and technical documentation.",
+        "long_desc": "Code generation requires strong reasoning and large context. These models are trusted by engineering teams for automated coding tasks at the lowest API cost.",
+        "filter": lambda m: m["context_length"] >= 16000 and not m["is_free"] and m["total_price_per_1m"] > 0,
+        "sort_key": lambda m: m["total_price_per_1m"],
+        "sort_label": "cheapest per 1M tokens",
+    },
+    "long-context": {
+        "label": "Long-Context Processing",
+        "slug": "long-context",
+        "icon": "📜",
+        "desc": "Models able to process massive documents, codebases, or entire books in one call.",
+        "long_desc": "Long-context processing is essential for legal documents, research papers, and large codebases. These models offer the largest windows at competitive prices.",
+        "filter": lambda m: m["context_length"] >= 100_000,
+        "sort_key": lambda m: -m["context_length"],
+        "sort_label": "longest context window",
+    },
+    "high-volume": {
+        "label": "High-Volume Batch Processing",
+        "slug": "high-volume",
+        "icon": "⚡",
+        "desc": "Cheapest models for large-scale data pipelines, classification, and extraction.",
+        "long_desc": "When processing millions of tokens daily, cost is everything. These are the most cost-effective paid models for batch workloads like classification, extraction, and summarization.",
+        "filter": lambda m: not m["is_free"] and 0 < m["total_price_per_1m"] < 2.0,
+        "sort_key": lambda m: m["total_price_per_1m"],
+        "sort_label": "cheapest per 1M tokens",
+    },
+    "enterprise": {
+        "label": "Enterprise & Production APIs",
+        "slug": "enterprise",
+        "icon": "🏢",
+        "desc": "Reliable, well-documented models from major providers for production workloads.",
+        "long_desc": "Enterprise teams need SLAs, compliance, and stability. These models come from providers with proven uptime, SOC 2 compliance, and enterprise support tiers.",
+        "filter": lambda m: m["provider"] in {"openai", "anthropic", "google"} and not m["is_free"] and m["total_price_per_1m"] > 0,
+        "sort_key": lambda m: m["total_price_per_1m"],
+        "sort_label": "cheapest enterprise option",
+    },
+}
+
 # ─── HTML Templates ───────────────────────────────────────────────────────────
 
 # Logo SVG vectorial (inline, no depende de red)
@@ -247,6 +312,64 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .win { color: var(--success); font-weight: 700; }
 .loss { color: var(--text-muted); }
 
+/* ── Calculator widget ── */
+.calc-widget {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 2rem; margin: 2rem 0;
+}
+.calc-widget h2 { margin-top: 0; }
+.calc-label { display: block; font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+.calc-select {
+  width: 100%; background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); padding: 8px 12px; border-radius: 8px;
+  font-size: 0.875rem; outline: none;
+}
+.calc-select:focus { border-color: var(--accent); }
+.calc-input {
+  flex: 1; background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); padding: 8px 12px; border-radius: 8px;
+  font-size: 0.875rem; outline: none; min-width: 0;
+}
+.calc-input:focus { border-color: var(--accent); }
+.calc-results {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem; margin-top: 1.5rem;
+}
+.calc-result-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1rem 1.25rem;
+}
+.calc-result-card.winner { border-color: rgba(16,185,129,0.4); }
+.calc-result-card.highlight {
+  border-color: rgba(59,130,246,0.4); background: rgba(59,130,246,0.05);
+}
+.calc-result-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+.calc-result-val { font-size: 1.5rem; font-weight: 800; font-family: 'Geist Mono', monospace; color: #fff; letter-spacing: -0.04em; }
+.calc-result-val.green { color: var(--success); }
+.calc-savings-pct { font-size: 0.8rem; font-weight: 600; margin-top: 2px; }
+
+/* ── Top 5 niche cards ── */
+.top5-list { display: flex; flex-direction: column; gap: 1rem; margin: 1.5rem 0; }
+.top5-card {
+  display: flex; align-items: flex-start; gap: 1.25rem;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.5rem;
+}
+.top5-card.winner { border-color: rgba(16,185,129,0.4); }
+.top5-rank { font-size: 1.75rem; flex-shrink: 0; line-height: 1; padding-top: 2px; }
+.top5-body { flex: 1; min-width: 0; }
+.top5-name { font-size: 1.05rem; font-weight: 600; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.top5-name a { color: var(--text); }
+.top5-name a:hover { color: var(--accent); }
+.top5-desc { color: var(--text-muted); font-size: 0.85rem; margin: 4px 0 8px; line-height: 1.5; }
+.top5-meta { font-size: 0.82rem; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.top5-price { text-align: right; flex-shrink: 0; }
+@media (max-width: 660px) {
+  .top5-card { flex-wrap: wrap; }
+  .top5-price { width: 100%; text-align: left; border-top: 1px solid var(--border); padding-top: .75rem; margin-top: .5rem; }
+  .calc-results { grid-template-columns: 1fr; }
+}
+
 /* ── Misc ── */
 .breadcrumb { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.5rem; }
 .breadcrumb a { color: var(--text-muted); }
@@ -348,6 +471,8 @@ def _html(title: str, body: str, desc: str = "", canonical: str = "") -> str:
   <div class="nav-links">
     <a href="{SITE_URL}/">Models</a>
     <a href="{SITE_URL}/compare/">Compare</a>
+    <a href="{SITE_URL}/for/">Use Cases</a>
+    <a href="{SITE_URL}/providers/">Providers</a>
     <a href="{SITE_URL}/pricing.html" style="color:#a78bfa">Get Alerts</a>
     <a class="nav-cta" href="{STORMROUTER_URL}" target="_blank" rel="noopener">Try StormRouter →</a>
   </div>
@@ -374,11 +499,91 @@ def _fmt(price: float) -> str:
         return f"${price:.4f}"
     return f"${price:.3f}"
 
+
 def _monthly(price_per_1m: float, tokens: int) -> str:
     if price_per_1m == 0:
         return "$0.00"
     c = (price_per_1m / 1_000_000) * tokens
     return f"${c:,.2f}" if c >= 0.01 else "<$0.01"
+
+
+def _calc_html(models: list[dict], preselected_id: str = "") -> str:
+    """Widget de calculadora de ahorro anual — se incrusta en model/compare/niche pages."""
+    paid = [m for m in models if not m["is_free"] and m["total_price_per_1m"] > 0]
+    paid.sort(key=lambda m: m["total_price_per_1m"])
+    options = "".join(
+        f'<option value="{m["id"]}" {"selected" if m["id"] == preselected_id else ""}>{m["name"]} — ${m["total_price_per_1m"]:.4f}/1M</option>'
+        for m in paid[:50]
+    )
+    models_json = json.dumps([
+        {"id": m["id"], "name": m["name"], "total": m["total_price_per_1m"], "is_free": m["is_free"]}
+        for m in paid[:50]
+    ])
+    return f"""<div class="calc-widget">
+  <h2>💰 Annual Savings Calculator</h2>
+  <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1.5rem">Pick your current model and monthly token volume — see how much you'd save by switching to the cheapest alternative.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+    <div>
+      <label class="calc-label">Your current model</label>
+      <select id="calc-current" class="calc-select" onchange="runCalc()">{options}</select>
+    </div>
+    <div>
+      <label class="calc-label">Monthly token usage</label>
+      <div style="display:flex;gap:8px">
+        <input id="calc-tokens" class="calc-input" type="number" value="10" min="0.01" step="0.1" oninput="runCalc()" />
+        <select id="calc-unit" class="calc-select" style="width:82px" onchange="runCalc()">
+          <option value="M" selected>M</option>
+          <option value="K">K</option>
+          <option value="B">B</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="calc-results">
+    <div class="calc-result-card">
+      <div class="calc-result-label">Current monthly cost</div>
+      <div class="calc-result-val" id="calc-current-cost">—</div>
+    </div>
+    <div class="calc-result-card winner">
+      <div class="calc-result-label">With cheapest alternative</div>
+      <div class="calc-result-val green" id="calc-cheapest-cost">—</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px" id="calc-cheapest-name">—</div>
+    </div>
+    <div class="calc-result-card highlight">
+      <div class="calc-result-label">Annual savings</div>
+      <div class="calc-result-val green" id="calc-savings">—</div>
+      <div class="calc-savings-pct" id="calc-savings-pct"></div>
+    </div>
+  </div>
+  <script>
+  (function(){{
+    var MD={models_json};
+    function fmt(n){{return n>=0.01?'$'+n.toFixed(2):'<$0.01';}}
+    function run(){{
+      var t=parseFloat(document.getElementById('calc-tokens').value)||0;
+      var mu={{K:1e3,M:1e6,B:1e9}}[document.getElementById('calc-unit').value]||1e6;
+      var tot=t*mu;
+      var cid=document.getElementById('calc-current').value;
+      var cur=MD.find(function(m){{return m.id===cid;}});
+      var paid=MD.filter(function(m){{return !m.is_free&&m.total>0;}}).sort(function(a,b){{return a.total-b.total;}});
+      var cheap=paid[0];
+      if(!cur||!cheap)return;
+      var cc=(cur.total/1e6)*tot;
+      var chc=(cheap.total/1e6)*tot;
+      var sav=Math.max(0,cc-chc);
+      var pct=cc>0?Math.round(sav/cc*100):0;
+      document.getElementById('calc-current-cost').textContent=fmt(cc)+'/mo';
+      document.getElementById('calc-cheapest-cost').textContent=fmt(chc)+'/mo';
+      document.getElementById('calc-cheapest-name').textContent=cheap.name;
+      document.getElementById('calc-savings').textContent=fmt(sav*12)+'/yr';
+      var pe=document.getElementById('calc-savings-pct');
+      pe.textContent=pct>0?pct+'% savings':'Already using cheapest';
+      pe.style.color=pct>0?'var(--success)':'var(--text-muted)';
+    }}
+    window.runCalc=run; run();
+  }})();
+  </script>
+</div>"""
 
 
 # ─── Step 1: Fetch LLM prices from OpenRouter ────────────────────────────────
@@ -806,12 +1011,14 @@ def main():
     generate_site_data(models, descriptions)
 
     # 6. Generate static HTML site
-    pages_index = generate_index_html(models, price_changes, descriptions)
-    pages_models = generate_model_pages(models, descriptions)
+    pages_index   = generate_index_html(models, price_changes, descriptions)
+    pages_models  = generate_model_pages(models, descriptions)
     pages_compare = generate_comparison_pages(models, comparisons)
+    pages_niches  = generate_niche_pages(models, descriptions)
+    pages_providers = generate_provider_pages(models, descriptions)
     generate_sitemap(models, comparisons)
     generate_static_assets(len(models), len(comparisons))
-    total_pages = pages_index + pages_models + pages_compare
+    total_pages = pages_index + pages_models + pages_compare + pages_niches + pages_providers
     log_entry["html_pages_generated"] = total_pages
 
     # Log final
@@ -1036,6 +1243,7 @@ def generate_model_pages(models: list[dict], descriptions: dict) -> int:
       <tbody>{scenarios_rows}</tbody>
     </table></div>
     {'<h2>Compare with other models</h2>' + comp_links if comp_links else ''}
+    {_calc_html(models, m['id'])}
     <div class="cta">
       <h2>Automate your model selection</h2>
       <p>StormRouter sends each request to the cheapest model that can handle it.<br>Only use {m['name']} when your quality requirements demand it.</p>
@@ -1139,6 +1347,7 @@ def generate_comparison_pages(models: list[dict], comparisons: list[dict]) -> in
       </tr></thead>
       <tbody>{scenario_rows}</tbody>
     </table></div>
+    {_calc_html(models, cheap['id'])}
     <div class="cta">
       <h2>Use both automatically — let AI decide</h2>
       <p>StormRouter routes each prompt to the cheapest model that meets your quality requirements.<br>
@@ -1172,22 +1381,261 @@ def generate_comparison_pages(models: list[dict], comparisons: list[dict]) -> in
     return count
 
 
+# ─── Niche pages: Top 5 models for [use-case] ────────────────────────────────
+
+def generate_niche_pages(models: list[dict], descriptions: dict) -> int:
+    """Genera páginas 'Top 5 for [niche]' en output/for/<slug>.html"""
+    print("[HTML 5/6] Generando páginas por nicho (Top 5)...")
+    niche_dir = OUTPUT_DIR / "for"
+    niche_dir.mkdir(exist_ok=True)
+    count = 0
+    medals = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣"]
+
+    for niche_key, niche in NICHES.items():
+        candidates = [m for m in models if niche["filter"](m)]
+        candidates.sort(key=niche["sort_key"])
+        top5 = candidates[:5]
+        if not top5:
+            continue
+
+        def top5_row(i: int, m: dict) -> str:
+            desc = descriptions.get(m["id"], "")[:120]
+            if i > 0:
+                a_s, b_s = sorted([top5[0]["slug"], m["slug"]])
+                vs_link = f'<a href="{SITE_URL}/compare/{a_s}--vs--{b_s}.html" style="margin-left:12px;font-size:0.8rem;color:var(--accent)">vs #1 →</a>'
+            else:
+                vs_link = ""
+            return (
+                f'<div class="top5-card {"winner" if i == 0 else ""}">'
+                f'<div class="top5-rank">{medals[i]}</div>'
+                f'<div class="top5-body">'
+                f'<div class="top5-name"><a href="{SITE_URL}/models/{m["slug"]}.html">{m["name"]}</a>'
+                f'<span class="tag">{m["provider"]}</span></div>'
+                f'{f"<p class=\'top5-desc\'>{desc}</p>" if desc else ""}'
+                f'<div class="top5-meta">'
+                f'<span class="price-in">${m["prompt_price_per_1m"]:.4f}/1M in</span>'
+                f'<span class="price-out"> · ${m["completion_price_per_1m"]:.4f}/1M out</span>'
+                f'<span style="color:var(--text-muted)"> · {m["context_length"]//1000}K ctx</span>'
+                f'{vs_link}</div></div>'
+                f'<div class="top5-price">'
+                f'<div class="price-big {"cheaper" if i == 0 else ""}">${m["total_price_per_1m"]:.4f}</div>'
+                f'<div style="font-size:0.72rem;color:var(--text-muted)">per 1M tokens</div>'
+                f'</div></div>'
+            )
+
+        top5_html = "".join(top5_row(i, m) for i, m in enumerate(top5))
+
+        comp_links = ""
+        for i in range(len(top5)):
+            for j in range(i + 1, len(top5)):
+                a, b = top5[i], top5[j]
+                a_s, b_s = sorted([a["slug"], b["slug"]])
+                comp_links += f'<a href="{SITE_URL}/compare/{a_s}--vs--{b_s}.html" class="tag" style="color:var(--accent)">{a["name"]} vs {b["name"]} →</a>'
+
+        related = "".join(
+            f'<a href="{SITE_URL}/for/{n["slug"]}.html" class="tag" style="color:var(--text-sub)">{n["icon"]} {n["label"]}</a>'
+            for k, n in NICHES.items() if k != niche_key
+        )
+
+        calc = _calc_html(models, top5[0]["id"])
+        body = (
+            f'<div class="breadcrumb"><a href="{SITE_URL}/">LLM Pricing</a> › <a href="{SITE_URL}/for/">Use Cases</a> › {niche["label"]}</div>'
+            f'<div class="hero" style="text-align:left;padding:3rem 0 2rem">'
+            f'<div class="hero-badge">{niche["icon"]} Top 5 Models · Updated {TODAY}</div>'
+            f'<h1>Best LLMs for<br>{niche["label"]}</h1>'
+            f'<p class="subtitle" style="text-align:left;max-width:640px">{niche["long_desc"]}</p></div>'
+            f'<div class="top5-list">{top5_html}</div>'
+            f'{calc}'
+            f'{"<h2>Head-to-head comparisons</h2><div class=\'tags\'>" + comp_links + "</div>" if comp_links else ""}'
+            f'<h2>Other use cases</h2><div class="tags">{related}</div>'
+            f'<div class="cta"><h2>Route automatically by use case</h2>'
+            f'<p>StormRouter detects the intent of each prompt and routes it to the cheapest model that can handle it.</p>'
+            f'<a class="btn" href="{STORMROUTER_URL}" target="_blank" rel="noopener">Try StormRouter free →</a></div>'
+        )
+
+        html = _html(
+            title=f"Top 5 LLMs for {niche['label']} — Pricing & Comparison 2026",
+            body=body,
+            desc=f"{niche['desc']} Ranked by {niche['sort_label']}. Full pricing breakdown with annual savings calculator.",
+            canonical=f"{SITE_URL}/for/{niche['slug']}.html",
+        )
+        (niche_dir / f"{niche['slug']}.html").write_text(html, encoding="utf-8")
+        count += 1
+
+    # Niche index page
+    niche_cards = "".join(
+        f'<a href="{n["slug"]}.html" style="display:flex;align-items:center;gap:14px;padding:18px 22px;'
+        f'background:var(--card);border:1px solid var(--border);border-radius:12px;text-decoration:none;margin-bottom:10px;">'
+        f'<span style="font-size:2rem">{n["icon"]}</span>'
+        f'<div><div style="font-weight:600;color:var(--text)">{n["label"]}</div>'
+        f'<div style="font-size:0.82rem;color:var(--text-muted)">{n["desc"]}</div></div>'
+        f'<span style="margin-left:auto;color:var(--accent);font-size:0.85rem;flex-shrink:0">Top 5 →</span></a>'
+        for _, n in NICHES.items()
+    )
+    index_body = (
+        f'<div class="hero"><div class="hero-badge">LLM Use Case Guide</div>'
+        f'<h1>Best AI Models<br>by Use Case</h1>'
+        f'<p class="subtitle">Find the most cost-efficient LLM for your specific application.</p></div>'
+        f'{niche_cards}'
+    )
+    (niche_dir / "index.html").write_text(
+        _html("Best LLMs by Use Case 2026 — Cheapest AI Models for Every Task", index_body,
+              desc="Best and cheapest LLMs for chatbots, RAG, coding, long-context, batch processing, and enterprise. Updated daily."),
+        encoding="utf-8",
+    )
+    print(f"  ✅ {count} páginas de nicho en output/for/")
+    return count
+
+
+# ─── Provider cluster pages ───────────────────────────────────────────────────
+
+def generate_provider_pages(models: list[dict], descriptions: dict) -> int:
+    """Genera páginas de proveedor en output/providers/<slug>.html con interlinking."""
+    print("[HTML 6/6] Generando páginas de proveedor...")
+    from collections import defaultdict
+    provider_dir = OUTPUT_DIR / "providers"
+    provider_dir.mkdir(exist_ok=True)
+
+    by_provider: dict[str, list[dict]] = defaultdict(list)
+    for m in models:
+        by_provider[m["provider"]].append(m)
+
+    priority_providers = {m.split("/")[0] for m in PRIORITY_MODELS}
+    to_gen = {p: ms for p, ms in by_provider.items()
+              if p in priority_providers or len(ms) >= 3}
+
+    count = 0
+    provider_index_links = ""
+
+    for provider, pmodels in sorted(to_gen.items(), key=lambda x: (-len(x[1]), x[0])):
+        pmodels_sorted = sorted(pmodels, key=lambda m: m["total_price_per_1m"])
+        free_count = sum(1 for m in pmodels_sorted if m["is_free"])
+        cheapest_paid = next((m for m in pmodels_sorted if not m["is_free"] and m["total_price_per_1m"] > 0), None)
+        slug = re.sub(r"[^a-z0-9]+", "-", provider.lower()).strip("-")
+
+        rows = "".join(
+            f"<tr>"
+            f"<td><a class='model-link' href='{SITE_URL}/models/{m['slug']}.html'>{m['name']}</a></td>"
+            f"<td class='price-in' data-val='{m['prompt_price_per_1m']}'>{_fmt(m['prompt_price_per_1m'])}</td>"
+            f"<td class='price-out' data-val='{m['completion_price_per_1m']}'>{_fmt(m['completion_price_per_1m'])}</td>"
+            f"<td class='price-tot' data-val='{m['total_price_per_1m']}'>{_fmt(m['total_price_per_1m'])}"
+            f"{'<span class=\"badge-free\" style=\"margin-left:6px\">FREE</span>' if m['is_free'] else ''}</td>"
+            f"<td class='ctx' data-val='{m['context_length']}'>{m['context_length']//1000}K</td>"
+            f"</tr>"
+            for m in pmodels_sorted
+        )
+
+        # Cross-provider comparison links
+        xprov_links = ""
+        other_providers = [p2 for p2 in priority_providers if p2 != provider and p2 in by_provider][:5]
+        for other_p in other_providers:
+            other_best = min(
+                (m for m in by_provider[other_p] if not m["is_free"] and m["total_price_per_1m"] > 0),
+                key=lambda m: m["total_price_per_1m"], default=None
+            )
+            if cheapest_paid and other_best:
+                a_s, b_s = sorted([cheapest_paid["slug"], other_best["slug"]])
+                xprov_links += (
+                    f'<a href="{SITE_URL}/compare/{a_s}--vs--{b_s}.html" class="tag" style="color:var(--accent)">'
+                    f'{provider.title()} vs {other_p.title()} →</a>'
+                )
+
+        calc = _calc_html(models, cheapest_paid["id"] if cheapest_paid else "")
+
+        body = (
+            f'<div class="breadcrumb"><a href="{SITE_URL}/">LLM Pricing</a> › <a href="{SITE_URL}/providers/">Providers</a> › {provider.title()}</div>'
+            f'<h1>{provider.title()} API Pricing — All Models 2026</h1>'
+            f'<div class="stats-grid">'
+            f'<div class="stat-card"><span class="stat-val blue">{len(pmodels_sorted)}</span><div class="stat-lbl">Total models</div></div>'
+            f'<div class="stat-card"><span class="stat-val green">{free_count}</span><div class="stat-lbl">Free models</div></div>'
+            f'<div class="stat-card"><span class="stat-val green">{_fmt(cheapest_paid["total_price_per_1m"]) if cheapest_paid else "—"}</span><div class="stat-lbl">Cheapest paid /1M</div></div>'
+            f'<div class="stat-card"><span class="stat-val">{len(pmodels_sorted) - free_count}</span><div class="stat-lbl">Paid models</div></div>'
+            f'</div>'
+            f'<div class="table-wrap"><table>'
+            f'<thead><tr>'
+            f'<th data-col="0">Model ↕</th><th data-col="1">Input /1M ↕</th>'
+            f'<th data-col="2">Output /1M ↕</th><th data-col="3">Total /1M ↕</th><th data-col="4">Context ↕</th>'
+            f'</tr></thead><tbody>{rows}</tbody></table></div>'
+            f'{calc}'
+            f'{"<h2>Compare with other providers</h2><div class=\'tags\'>" + xprov_links + "</div>" if xprov_links else ""}'
+            f'<div class="cta"><h2>Don\'t lock into one provider</h2>'
+            f'<p>StormRouter switches between {provider.title()} and other providers dynamically based on real-time price and availability.</p>'
+            f'<a class="btn" href="{STORMROUTER_URL}" target="_blank" rel="noopener">Try StormRouter free →</a></div>'
+        )
+
+        html = _html(
+            title=f"{provider.title()} LLM API Pricing 2026 — All Models & Costs",
+            body=body,
+            desc=f"{provider.title()} offers {len(pmodels_sorted)} LLM APIs. Cheapest at {_fmt(cheapest_paid['total_price_per_1m']) if cheapest_paid else 'free'}/1M tokens. Full pricing breakdown and annual savings calculator.",
+            canonical=f"{SITE_URL}/providers/{slug}.html",
+        )
+        (provider_dir / f"{slug}.html").write_text(html, encoding="utf-8")
+
+        provider_index_links += (
+            f'<a href="{slug}.html" style="display:flex;justify-content:space-between;align-items:center;'
+            f'padding:14px 18px;background:var(--card);border:1px solid var(--border);border-radius:10px;'
+            f'margin-bottom:8px;text-decoration:none;">'
+            f'<span style="font-weight:600;color:var(--text)">{provider.title()}</span>'
+            f'<span style="color:var(--text-muted);font-size:0.82rem">{len(pmodels_sorted)} models · '
+            f'from {_fmt(cheapest_paid["total_price_per_1m"]) if cheapest_paid else "Free"}/1M</span>'
+            f'<span style="color:var(--accent);font-size:0.82rem;flex-shrink:0">View all →</span></a>'
+        )
+        count += 1
+
+    index_body = (
+        f'<div class="hero"><div class="hero-badge">Provider Directory</div>'
+        f'<h1>LLM Providers<br>Pricing Directory</h1>'
+        f'<p class="subtitle">All AI model providers ranked by model count. Find the best deal from each ecosystem.</p></div>'
+        f'{provider_index_links}'
+    )
+    (provider_dir / "index.html").write_text(
+        _html("LLM API Providers 2026 — Full Pricing Directory", index_body,
+              desc="Compare AI model providers: OpenAI, Anthropic, Google, Meta, Mistral, DeepSeek and more. Prices, model counts, and annual savings calculator."),
+        encoding="utf-8",
+    )
+    print(f"  ✅ {count} páginas de proveedor en output/providers/")
+    return count
+
+
 def generate_sitemap(models: list[dict], comparisons: list[dict]):
-    """Genera output/sitemap.xml para Google."""
-    print("[HTML 4/4] Generando sitemap.xml...")
-    urls = [f"{SITE_URL}/", f"{SITE_URL}/compare/"]
-    urls += [f"{SITE_URL}/models/{m['slug']}.html" for m in models]
-    urls += [f"{SITE_URL}/compare/{c['slug']}.html" for c in comparisons]
+    """Genera output/sitemap.xml con clusters inteligentes por proveedor y nicho."""
+    print("[HTML sitemap] Generando sitemap.xml inteligente...")
+
+    # ─ Cluster 1: Core pages ─
+    core = [
+        (f"{SITE_URL}/", "1.0"),
+        (f"{SITE_URL}/compare/", "0.85"),
+        (f"{SITE_URL}/for/", "0.85"),
+        (f"{SITE_URL}/providers/", "0.80"),
+    ]
+    # ─ Cluster 2: Niche pages (alta autoridad — Topic clusters) ─
+    niche_urls = [(f"{SITE_URL}/for/{n['slug']}.html", "0.80") for n in NICHES.values()]
+
+    # ─ Cluster 3: Provider pages ─
+    priority_providers = {m.split("/")[0] for m in PRIORITY_MODELS}
+    provider_slugs = {re.sub(r"[^a-z0-9]+", "-", p.lower()).strip("-") for p in
+                     (m["provider"] for m in models) if p in priority_providers}
+    provider_urls = [(f"{SITE_URL}/providers/{s}.html", "0.75") for s in sorted(provider_slugs)]
+
+    # ─ Cluster 4: Priority model pages (high-traffic head queries) ─
+    priority_slugs = {m["slug"] for m in models if m["id"] in set(PRIORITY_MODELS)}
+    model_urls = []
+    for m in models:
+        p = "0.70" if m["slug"] in priority_slugs else "0.55"
+        model_urls.append((f"{SITE_URL}/models/{m['slug']}.html", p))
+
+    # ─ Cluster 5: Compare pages (long-tail, high-intent) ─
+    compare_urls = [(f"{SITE_URL}/compare/{c['slug']}.html", "0.60") for c in comparisons]
+
+    all_urls = core + niche_urls + provider_urls + model_urls + compare_urls
 
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    priorities = {f"{SITE_URL}/": "1.0", f"{SITE_URL}/compare/": "0.8"}
-    for url in urls:
-        p = priorities.get(url, "0.7" if "/models/" in url else "0.6")
-        xml += f"  <url><loc>{url}</loc><lastmod>{TODAY}</lastmod><priority>{p}</priority></url>\n"
+    for url, priority in all_urls:
+        xml += f"  <url><loc>{url}</loc><lastmod>{TODAY}</lastmod><priority>{priority}</priority></url>\n"
     xml += "</urlset>"
     (OUTPUT_DIR / "sitemap.xml").write_text(xml, encoding="utf-8")
-    print(f"  ✅ sitemap.xml ({len(urls)} URLs)")
+    print(f"  ✅ sitemap.xml ({len(all_urls)} URLs en 5 clusters)")
 
 
 def _save_log(entry: dict):
