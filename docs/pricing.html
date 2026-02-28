@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM Pricing Monitor — Pricing</title>
+  <meta name="description" content="Real-time price alerts for GPT-4, Claude, Gemini and 30+ LLM APIs. Get Slack/Discord alerts when any model changes pricing.">
+  <meta property="og:title" content="LLM Pricing Monitor — Never Miss a Price Change">
+  <meta property="og:description" content="Automated alerts when GPT-4, Claude, Gemini and other LLM APIs change pricing. From $4/month.">
+  <meta property="og:url" content="https://aridanygomez.github.io/data-money-engine/pricing.html">
+  <link rel="canonical" href="https://aridanygomez.github.io/data-money-engine/pricing.html">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0f;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* NAV */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .logo { font-weight: 700; font-size: 1.1rem; color: #7c3aed; }
+    .nav-link { color: #94a3b8; font-size: 0.9rem; transition: color .2s; }
+    .nav-link:hover { color: #e2e8f0; }
+
+    /* HERO */
+    .hero {
+      text-align: center;
+      padding: 5rem 1.5rem 3rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(124,58,237,0.2);
+      color: #a78bfa;
+      border: 1px solid rgba(124,58,237,0.4);
+      border-radius: 99px;
+      padding: 0.3rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #e2e8f0 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      color: #94a3b8;
+      font-size: 1.1rem;
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+    .models-row {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 3rem;
+    }
+    .model-chip {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+
+    /* PRICING CARDS */
+    .pricing-section {
+      max-width: 900px;
+      margin: 0 auto 5rem;
+      padding: 0 1.5rem;
+    }
+    .toggle-row {
+      display: flex; justify-content: center;
+      margin-bottom: 2.5rem;
+      gap: 1rem;
+      align-items: center;
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 2rem;
+      position: relative;
+      transition: border-color .3s, transform .3s;
+    }
+    .card:hover {
+      border-color: rgba(124,58,237,0.5);
+      transform: translateY(-2px);
+    }
+    .card.featured {
+      border-color: rgba(124,58,237,0.6);
+      background: rgba(124,58,237,0.08);
+    }
+    .plan-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #7c3aed;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.8rem;
+      border-radius: 99px;
+    }
+    .plan-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #e2e8f0;
+    }
+    .plan-desc {
+      color: #64748b;
+      font-size: 0.85rem;
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .price-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 0.25rem;
+      margin-bottom: 1.75rem;
+    }
+    .price-amount {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #e2e8f0;
+      line-height: 1;
+    }
+    .price-currency {
+      font-size: 1.2rem;
+      color: #94a3b8;
+      margin-bottom: 0.4rem;
+    }
+    .price-period {
+      color: #64748b;
+      font-size: 0.85rem;
+      margin-bottom: 0.4rem;
+    }
+    .features {
+      list-style: none;
+      margin-bottom: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+    .features li .check { color: #10b981; font-size: 1rem; flex-shrink: 0; }
+    .cta-btn {
+      display: block;
+      width: 100%;
+      padding: 0.85rem 1.5rem;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-align: center;
+      transition: all .2s;
+      cursor: pointer;
+    }
+    .cta-btn.primary {
+      background: #7c3aed;
+      color: #fff;
+      border: none;
+    }
+    .cta-btn.primary:hover { background: #6d28d9; }
+    .cta-btn.secondary {
+      background: transparent;
+      color: #a78bfa;
+      border: 1px solid rgba(124,58,237,0.5);
+    }
+    .cta-btn.secondary:hover { background: rgba(124,58,237,0.1); }
+
+    /* FAQ */
+    .faq-section {
+      max-width: 700px;
+      margin: 0 auto 5rem;
+      padding: 0 1.5rem;
+    }
+    .faq-section h2 {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+    }
+    details {
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    details[open] { background: rgba(255,255,255,0.03); }
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #e2e8f0;
+      list-style: none;
+    }
+    summary::after { content: ' +'; color: #7c3aed; }
+    details[open] summary::after { content: ' −'; }
+    details p {
+      margin-top: 0.75rem;
+      color: #94a3b8;
+      line-height: 1.65;
+      font-size: 0.9rem;
+    }
+
+    /* CTA BOTTOM */
+    .bottom-cta {
+      text-align: center;
+      padding: 4rem 1.5rem 6rem;
+      background: radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.15), transparent 70%);
+    }
+    .bottom-cta h2 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+    .bottom-cta p { color: #94a3b8; margin-bottom: 2rem; }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      color: #475569;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="index.html">⚡ LLM Price Monitor</a>
+  <a class="nav-link" href="index.html">← All Models</a>
+</nav>
+
+<section class="hero">
+  <div class="badge">Simple Pricing</div>
+  <h1>Know before your bill does</h1>
+  <p>Get instant Slack/Discord alerts whenever GPT-4o, Claude, Gemini or any of 30+ LLM APIs change their pricing. No more surprise invoices.</p>
+  <div class="models-row">
+    <span class="model-chip">GPT-4o</span>
+    <span class="model-chip">Claude 3.5 Sonnet</span>
+    <span class="model-chip">Gemini 1.5 Pro</span>
+    <span class="model-chip">Llama 3.1</span>
+    <span class="model-chip">Mistral Large</span>
+    <span class="model-chip">DeepSeek V3</span>
+    <span class="model-chip">+ 25 more</span>
+  </div>
+</section>
+
+<section class="pricing-section">
+  <div class="cards">
+
+    <!-- Starter -->
+    <div class="card">
+      <div class="plan-name">Starter</div>
+      <div class="plan-desc">For indie devs and small teams watching their AI costs</div>
+      <div class="price-row">
+        <span class="price-currency">$</span>
+        <span class="price-amount">4</span>
+        <span class="price-period">&nbsp;/ month</span>
+      </div>
+      <ul class="features">
+        <li><span class="check">✓</span> Slack &amp; Discord price-change alerts</li>
+        <li><span class="check">✓</span> Monitor all 30+ LLM APIs</li>
+        <li><span class="check">✓</span> Custom threshold (e.g. alert on ≥5% change)</li>
+        <li><span class="check">✓</span> Daily digest via webhook</li>
+        <li><span class="check">✓</span> Cancel any time</li>
+      </ul>
+      <a class="cta-btn secondary" href="https://buy.stripe.com/8x28wO49oaSX18yh1M1gs0P" target="_blank">
+        Get Starter — $4/mo →
+      </a>
+    </div>
+
+    <!-- Pro -->
+    <div class="card featured">
+      <div class="plan-badge">Most Popular</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-desc">For startups and teams building on top of LLM APIs</div>
+      <div class="price-row">
+        <span class="price-currency">$</span>
+        <span class="price-amount">12</span>
+        <span class="price-period">&nbsp;/ month</span>
+      </div>
+      <ul class="features">
+        <li><span class="check">✓</span> Everything in Starter</li>
+        <li><span class="check">✓</span> REST API access (JSON)</li>
+        <li><span class="check">✓</span> 90-day price history per model</li>
+        <li><span class="check">✓</span> Priority alert delivery</li>
+        <li><span class="check">✓</span> API key for custom integrations</li>
+        <li><span class="check">✓</span> Cancel any time</li>
+      </ul>
+      <a class="cta-btn primary" href="https://buy.stripe.com/aFa14m5ds8KPcRg9zk1gs0Q" target="_blank">
+        Get Pro — $12/mo →
+      </a>
+    </div>
+
+  </div>
+
+  <p style="text-align:center; color:#475569; font-size:0.8rem; margin-top:1.5rem;">
+    Secure payment via Stripe · No credit card stored · Cancel anytime
+  </p>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section">
+  <h2>Frequently Asked Questions</h2>
+
+  <details>
+    <summary>How do the alerts work?</summary>
+    <p>After subscribing, you register your Slack or Discord webhook URL via our API. Every morning the bot scrapes prices from 30+ LLM providers. If any price changes by more than your threshold (default 5%), your webhook gets an instant notification.</p>
+  </details>
+
+  <details>
+    <summary>Which models are tracked?</summary>
+    <p>We track GPT-4o, GPT-4 Turbo, Claude 3.5 Sonnet, Claude 3 Opus, Gemini 1.5 Pro/Flash, Llama 3.1 (via Groq, Together, Fireworks), Mistral Large, DeepSeek V3, Command R+, and 20+ more. New models are added automatically.</p>
+  </details>
+
+  <details>
+    <summary>What does the REST API include (Pro)?</summary>
+    <p>The Pro API gives you <code>GET /api/v1/models</code> for current prices, <code>GET /api/v1/cheapest?n=10</code> for the cheapest options, and <code>GET /api/v1/history/:id</code> for 90-day price history. Perfect for building dashboards or cost-optimization scripts.</p>
+  </details>
+
+  <details>
+    <summary>Can I cancel anytime?</summary>
+    <p>Yes. Cancel from the Stripe portal at any time. Your access continues until the end of the billing period. No questions asked.</p>
+  </details>
+
+  <details>
+    <summary>Is there a free tier?</summary>
+    <p>The public site at <a href="index.html" style="color:#a78bfa">llm-pricing.dev</a> shows current prices for free (up to 20 models). Paid plans add alerts and deeper API access.</p>
+  </details>
+</section>
+
+<!-- BOTTOM CTA -->
+<section class="bottom-cta">
+  <h2>Start tracking LLM prices today</h2>
+  <p>Join developers and teams saving money on AI costs.</p>
+  <a class="cta-btn primary" style="display:inline-block; width:auto; padding: 0.9rem 2.5rem; font-size:1rem;"
+     href="https://buy.stripe.com/8x28wO49oaSX18yh1M1gs0P" target="_blank">
+    Get Started — $4/month →
+  </a>
+</section>
+
+<footer>
+  <p>© 2026 LLM Price Monitor · <a href="index.html" style="color:#7c3aed">All models →</a></p>
+</footer>
+
+</body>
+</html>

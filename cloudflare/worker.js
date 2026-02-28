@@ -49,6 +49,11 @@ export default {
         return await handlePolarWebhook(request, env);
       }
 
+      // ── Stripe webhooks ──────────────────────────────────────────────────
+      if (path === '/webhooks/stripe' && method === 'POST') {
+        return await handleStripeWebhook(request, env);
+      }
+
       // ── Public API ────────────────────────────────────────────────────────
       if (path.startsWith('/api/v1/')) {
         return await handleAPI(request, url, path, env);
@@ -427,6 +432,120 @@ async function generateApiKey(seed) {
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return 'llmp_' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ─── Stripe Webhook Handler ─────────────────────────────────────────────────
+
+async function handleStripeWebhook(request, env) {
+  const body = await request.text();
+  const sigHeader = request.headers.get('stripe-signature') || '';
+
+  const valid = await verifyStripeSignature(body, sigHeader, env.STRIPE_WEBHOOK_SECRET);
+  if (!valid) return json({ error: 'Invalid Stripe signature' }, 401);
+
+  const event = JSON.parse(body);
+  const type = event.type;
+  const obj = event.data?.object;
+
+  console.log(`Stripe event: ${type}`);
+
+  if (type === 'customer.subscription.created' || type === 'customer.subscription.updated') {
+    await handleStripeSubscriptionActive(env, obj);
+  } else if (type === 'customer.subscription.deleted') {
+    await handleStripeSubscriptionCanceled(env, obj);
+  } else if (type === 'invoice.payment_failed') {
+    // Marcar como inactivo si falla el pago
+    const custId = obj?.customer;
+    if (custId) {
+      await env.DB.prepare(
+        'UPDATE subscribers SET active = 0 WHERE stripe_customer_id = ?'
+      ).bind(custId).run();
+    }
+  }
+
+  return json({ received: true });
+}
+
+async function handleStripeSubscriptionActive(env, sub) {
+  if (!sub) return;
+  const custId = sub.customer;
+  const status = sub.status; // active, trialing, past_due...
+  if (!custId) return;
+
+  // Obtener email del customer desde metadata o items
+  const email = sub.customer_email || custId; // Stripe no incluye email en sub object directamente
+  const priceId = sub.items?.data?.[0]?.price?.id || '';
+
+  // Identificar plan por price_amount (400 = starter, 1200 = pro)
+  const amount = sub.items?.data?.[0]?.price?.unit_amount || 0;
+  const planName = amount >= 1200 ? 'pro' : 'starter';
+  const isActive = ['active', 'trialing'].includes(status) ? 1 : 0;
+
+  const apiKey = await generateApiKey(custId);
+  const now = new Date().toISOString().slice(0, 10);
+  const expiresAt = sub.current_period_end
+    ? new Date(sub.current_period_end * 1000).toISOString().slice(0, 10)
+    : null;
+
+  await env.DB.prepare(`
+    INSERT INTO subscribers (stripe_customer_id, email, plan, api_key, active, created_at, expires_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(stripe_customer_id) DO UPDATE SET
+      plan = excluded.plan,
+      api_key = CASE WHEN api_key IS NULL THEN excluded.api_key ELSE api_key END,
+      active = excluded.active,
+      expires_at = excluded.expires_at
+  `).bind(custId, email, planName, apiKey, isActive, now, expiresAt).run().catch(async () => {
+    // Si falla por columna faltante, usar polar_customer_id
+    await env.DB.prepare(`
+      INSERT INTO subscribers (polar_customer_id, email, plan, api_key, active, created_at, expires_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(polar_customer_id) DO UPDATE SET
+        plan = excluded.plan,
+        active = excluded.active,
+        expires_at = excluded.expires_at
+    `).bind(custId, email, planName, apiKey, isActive, now, expiresAt).run();
+  });
+
+  console.log(`Stripe subscriber activated: ${custId} (${planName})`);
+}
+
+async function handleStripeSubscriptionCanceled(env, sub) {
+  if (!sub) return;
+  const custId = sub.customer;
+  if (!custId) return;
+  await env.DB.prepare(
+    'UPDATE subscribers SET active = 0 WHERE polar_customer_id = ?'
+  ).bind(custId).run();
+}
+
+async function verifyStripeSignature(body, sigHeader, secret) {
+  if (!secret || !sigHeader) return false;
+  try {
+    const parts = Object.fromEntries(sigHeader.split(',').map(p => p.split('=')));
+    const timestamp = parts['t'];
+    const sig = parts['v1'];
+    if (!timestamp || !sig) return false;
+
+    const payload = `${timestamp}.${body}`;
+    const key = await crypto.subtle.importKey(
+      'raw', new TextEncoder().encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+    );
+    const signatureBuffer = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload));
+    const expectedSig = Array.from(new Uint8Array(signatureBuffer))
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+
+    // Timing-safe comparison
+    if (expectedSig.length !== sig.length) return false;
+    let mismatch = 0;
+    for (let i = 0; i < expectedSig.length; i++) {
+      mismatch |= expectedSig.charCodeAt(i) ^ sig.charCodeAt(i);
+    }
+    return mismatch === 0;
+  } catch {
+    return false;
+  }
 }
 
 async function verifyPolarSignature(body, signature, secret) {

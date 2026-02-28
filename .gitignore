@@ -4,3 +4,9 @@ __pycache__/
 .venv/
 *.egg-info/
 .DS_Store
+
+stripe_config*.json
+setup_stripe*.py
+setup_polar.py
+polar_*.json
+starter_resp.json

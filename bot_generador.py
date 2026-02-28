@@ -348,6 +348,7 @@ def _html(title: str, body: str, desc: str = "", canonical: str = "") -> str:
   <div class="nav-links">
     <a href="{SITE_URL}/">Models</a>
     <a href="{SITE_URL}/compare/">Compare</a>
+    <a href="{SITE_URL}/pricing.html" style="color:#a78bfa">Get Alerts</a>
     <a class="nav-cta" href="{STORMROUTER_URL}" target="_blank" rel="noopener">Try StormRouter →</a>
   </div>
 </nav>
