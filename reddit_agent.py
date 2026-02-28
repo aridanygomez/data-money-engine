@@ -32,10 +32,8 @@ import argparse
 from datetime import datetime, timezone
 from typing import Annotated, TypedDict, Literal
 
-import praw
 import requests
 from langgraph.graph import StateGraph, END
-from langgraph.graph.message import add_messages
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 # ─── Config ──────────────────────────────────────────────────────────────────
@@ -163,7 +161,17 @@ def _score_text(text: str) -> float:
     return min(score, 1.0)
 
 
-def _praw_client() -> praw.Reddit:
+def _has_reddit_creds() -> bool:
+    """True si las 4 variables de entorno de Reddit están configuradas."""
+    return all(os.getenv(k) for k in [
+        "REDDIT_CLIENT_ID", "REDDIT_CLIENT_SECRET",
+        "REDDIT_USERNAME", "REDDIT_PASSWORD",
+    ])
+
+
+def _praw_client():
+    """Devuelve un cliente PRAW autenticado. Importa praw on-demand."""
+    import praw
     return praw.Reddit(
         client_id=os.environ["REDDIT_CLIENT_ID"],
         client_secret=os.environ["REDDIT_CLIENT_SECRET"],
@@ -171,6 +179,22 @@ def _praw_client() -> praw.Reddit:
         password=os.environ["REDDIT_PASSWORD"],
         user_agent=f"LLMPricingBot/1.0 by u/{os.environ['REDDIT_USERNAME']}",
     )
+
+
+def _reddit_public_fetch(subreddit: str, endpoint: str, limit: int) -> list[dict]:
+    """
+    API pública de Reddit  — no requiere ninguna credencial.
+    endpoint: 'new' | 'comments' | 'hot'
+    """
+    url = f"https://www.reddit.com/r/{subreddit}/{endpoint}.json"
+    headers = {"User-Agent": "LLMPricingBot/1.0 (public read)"}
+    try:
+        resp = requests.get(url, params={"limit": limit}, headers=headers, timeout=15)
+        resp.raise_for_status()
+        return resp.json().get("data", {}).get("children", [])
+    except Exception as e:
+        log.warning(f"Error fetching r/{subreddit}/{endpoint}: {e}")
+        return []
 
 
 def _fetch_pricing_data(keywords: list[str]) -> list[dict]:
@@ -235,58 +259,61 @@ def _get_llm() -> ChatGoogleGenerativeAI:
 
 def fetch_posts(state: AgentState) -> AgentState:
     """
-    Recoge posts y comentarios recientes de TARGET_SUBREDDITS.
-    Salta los hilos donde ya hemos respondido.
+    Recoge posts y comentarios recientes de TARGET_SUBREDDITS
+    usando la API JSON pública de Reddit (sin credenciales).
     """
-    log.info("📡 Fetching Reddit posts...")
-    reddit = _praw_client()
+    log.info("📡 Fetching Reddit posts (public API — no auth required)...")
     already_replied = set(state.get("posted_ids", []))
+    our_user = OUR_USERNAME.lower() if OUR_USERNAME else ""
     raw: list[RedditPost] = []
 
     for sub_name in TARGET_SUBREDDITS:
-        subreddit = reddit.subreddit(sub_name)
 
-        # — Submissions recientes —
-        for submission in subreddit.new(limit=POST_LIMIT):
-            if submission.id in already_replied:
+        # — Submissions nuevas —
+        for child in _reddit_public_fetch(sub_name, "new", POST_LIMIT):
+            d = child.get("data", {})
+            pid = d.get("id", "")
+            if not pid or pid in already_replied:
                 continue
-            # Saltar si ya respondemos en este hilo
-            if OUR_USERNAME:
-                submission.comments.replace_more(limit=0)
-                authors = {c.author.name for c in submission.comments.list() if c.author}
-                if OUR_USERNAME in authors:
-                    continue
-
+            author = d.get("author", "[deleted]")
+            if our_user and author.lower() == our_user:
+                continue
             raw.append(RedditPost(
-                id=submission.id,
+                id=pid,
                 subreddit=sub_name,
                 kind="post",
-                title=submission.title,
-                body=submission.selftext[:1500],
-                url=f"https://reddit.com{submission.permalink}",
-                author=str(submission.author),
-                score=submission.score,
-                created_utc=submission.created_utc,
-                permalink=submission.permalink,
+                title=d.get("title", ""),
+                body=(d.get("selftext", "") or "")[:1500],
+                url=f"https://reddit.com{d.get('permalink', '')}",
+                author=author,
+                score=d.get("score", 0),
+                created_utc=d.get("created_utc", 0.0),
+                permalink=d.get("permalink", ""),
             ))
 
-        # — Comentarios recientes (busca dudas directas) —
-        for comment in subreddit.comments(limit=COMMENT_LIMIT):
-            if comment.id in already_replied:
+        # — Comentarios recientes —
+        for child in _reddit_public_fetch(sub_name, "comments", COMMENT_LIMIT):
+            d = child.get("data", {})
+            cid = d.get("id", "")
+            if not cid or cid in already_replied:
                 continue
-            if OUR_USERNAME and str(comment.author) == OUR_USERNAME:
-                continue  # nuestros propios comentarios
+            author = d.get("author", "[deleted]")
+            if our_user and author.lower() == our_user:
+                continue
+            body = (d.get("body", "") or "")[:1500]
+            if not body or body in ("[deleted]", "[removed]"):
+                continue
             raw.append(RedditPost(
-                id=comment.id,
+                id=cid,
                 subreddit=sub_name,
                 kind="comment",
                 title="",
-                body=comment.body[:1500],
-                url=f"https://reddit.com{comment.permalink}",
-                author=str(comment.author),
-                score=comment.score,
-                created_utc=comment.created_utc,
-                permalink=comment.permalink,
+                body=body,
+                url=f"https://reddit.com{d.get('permalink', '')}",
+                author=author,
+                score=d.get("score", 0),
+                created_utc=d.get("created_utc", 0.0),
+                permalink=d.get("permalink", ""),
             ))
 
     log.info(f"  Recogidos {len(raw)} items de {TARGET_SUBREDDITS}")
@@ -539,38 +566,50 @@ def quality_gate(state: AgentState) -> AgentState:
 
 def post_to_reddit(state: AgentState) -> AgentState:
     """
-    En modo --post: publica los borradores aprobados.
-    En dry-run: imprime a consola.
+    Publica los borradores aprobados via PRAW (requiere credenciales).
+    Si no hay credenciales: imprime los drafts en el log (útil en CI).
     """
     approved = state.get("approved", [])
-    dry_run = state.get("dry_run", True)
+    dry_run  = state.get("dry_run", True)
     posted_ids = list(state.get("posted_ids", []))
-    errors = list(state.get("errors", []))
+    errors     = list(state.get("errors", []))
 
     if not approved:
         log.info("ℹ️  Sin borradores aprobados para publicar.")
         return state
 
+    # Mostrar siempre los drafts en el log (visible en GitHub Actions)
+    log.info("=" * 60)
+    for d in approved:
+        log.info(f"\n📌 [{d['post']['subreddit']}] {d['post']['url']}")
+        log.info(f"{'─'*40}\n{d['draft']}\n{'─'*40}")
+
     if dry_run:
-        log.info("=" * 60)
-        log.info("🧪 DRY-RUN — Respuestas que se publicarían:")
-        for d in approved:
-            log.info(f"\n📌 [{d['post']['subreddit']}] {d['post']['url']}")
-            log.info(f"{'─'*40}\n{d['draft']}\n{'─'*40}")
+        log.info("🧪 DRY-RUN — no se publicará nada")
         return state
 
-    # Modo real
+    if not _has_reddit_creds():
+        log.warning(
+            "⚠️  REDDIT_CLIENT_ID / CLIENT_SECRET / USERNAME / PASSWORD "
+            "no configurados — drafts generados pero NO publicados.\n"
+            "Añade los 4 secrets en GitHub → Settings → Secrets para activar el posting."
+        )
+        return {**state, "posted_ids": posted_ids, "errors": errors}
+
+    # Modo real con PRAW
     reddit = _praw_client()
     for d in approved:
         post = d["post"]
         try:
-            target_id = f"t1_{post['id']}" if post["kind"] == "comment" else f"t3_{post['id']}"
-            thing = reddit.comment(post["id"]) if post["kind"] == "comment" else reddit.submission(id=post["id"])
+            if post["kind"] == "comment":
+                thing = reddit.comment(post["id"])
+            else:
+                thing = reddit.submission(id=post["id"])
             thing.reply(d["draft"])
             posted_ids.append(post["id"])
-            log.info(f"  ✅ Respuesta publicada en {post['url']}")
+            log.info(f"  ✅ Publicado en {post['url']}")
         except Exception as e:
-            msg = f"Error al postear en {post['id']}: {e}"
+            msg = f"Error al postear {post['id']}: {e}"
             log.error(f"  ❌ {msg}")
             errors.append(msg)
 
