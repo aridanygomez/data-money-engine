@@ -10,7 +10,7 @@ on:
       run_reddit:
         description: 'Ejecutar Reddit agent manualmente'
         required: false
-        default: 'false'h
+        default: 'false'
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────
